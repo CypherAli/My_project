@@ -36,7 +36,7 @@ impl OrderBook {
     }
 
     pub fn match_order(&mut self, _order: Order) -> Vec<Trade> {
-        let mut trades = Vec::new();
+        let trades = Vec::new();
         // TODO: Implement matching logic
         trades
     }
