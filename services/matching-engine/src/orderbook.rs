@@ -1,12 +1,12 @@
+use crate::types::{Order, OrderSide, Trade};
 use std::collections::BTreeMap;
 use uuid::Uuid;
-use crate::types::{Order, OrderSide, Trade};
 
 /// High-performance order book implementation
 pub struct OrderBook {
     symbol: String,
-    bids: BTreeMap<u64, Vec<Order>>,  // Price -> Orders (sorted descending)
-    asks: BTreeMap<u64, Vec<Order>>,  // Price -> Orders (sorted ascending)
+    bids: BTreeMap<u64, Vec<Order>>, // Price -> Orders (sorted descending)
+    asks: BTreeMap<u64, Vec<Order>>, // Price -> Orders (sorted ascending)
 }
 
 impl OrderBook {

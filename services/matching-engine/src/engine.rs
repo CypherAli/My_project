@@ -1,8 +1,8 @@
 use anyhow::Result;
 use async_nats::Client as NatsClient;
 use redis::aio::ConnectionManager;
-use tracing::info;
 use tokio::sync::mpsc;
+use tracing::info;
 
 pub struct MatchingEngine {
     nats_client: NatsClient,
@@ -11,11 +11,7 @@ pub struct MatchingEngine {
 }
 
 impl MatchingEngine {
-    pub fn new(
-        nats_client: NatsClient,
-        redis_conn: ConnectionManager,
-        workers: usize,
-    ) -> Self {
+    pub fn new(nats_client: NatsClient, redis_conn: ConnectionManager, workers: usize) -> Self {
         Self {
             nats_client,
             redis_conn,

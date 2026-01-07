@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -29,9 +29,9 @@ pub struct Order {
     pub symbol: String,
     pub side: OrderSide,
     pub order_type: OrderType,
-    pub price: u64,        // Price in smallest unit (e.g., cents)
-    pub quantity: u64,     // Quantity in smallest unit
-    pub filled: u64,       // Filled quantity
+    pub price: u64,    // Price in smallest unit (e.g., cents)
+    pub quantity: u64, // Quantity in smallest unit
+    pub filled: u64,   // Filled quantity
     pub status: OrderStatus,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,

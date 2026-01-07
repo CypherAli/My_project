@@ -4,8 +4,8 @@ use tracing_subscriber;
 
 mod config;
 mod engine;
-mod orderbook;
 mod messaging;
+mod orderbook;
 mod types;
 
 #[tokio::main]
@@ -38,11 +38,7 @@ async fn main() -> Result<()> {
     info!("Connected to Redis");
 
     // Initialize matching engine
-    let engine = engine::MatchingEngine::new(
-        nats_client,
-        redis_conn,
-        config.engine_workers,
-    );
+    let engine = engine::MatchingEngine::new(nats_client, redis_conn, config.engine_workers);
 
     info!("Matching engine initialized");
 
