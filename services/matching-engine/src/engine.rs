@@ -4,6 +4,7 @@ use redis::aio::ConnectionManager;
 use tokio::sync::mpsc;
 use tracing::info;
 
+#[allow(dead_code)]
 pub struct MatchingEngine {
     nats_client: NatsClient,
     redis_conn: ConnectionManager,

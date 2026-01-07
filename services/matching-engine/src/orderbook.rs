@@ -35,12 +35,14 @@ impl OrderBook {
         }
     }
 
+    #[allow(unused_variables)]
     pub fn match_order(&mut self, order: Order) -> Vec<Trade> {
         let mut trades = Vec::new();
         // TODO: Implement matching logic
         trades
     }
 
+    #[allow(unused_variables)]
     pub fn cancel_order(&mut self, order_id: Uuid) -> bool {
         // TODO: Implement cancellation logic
         false

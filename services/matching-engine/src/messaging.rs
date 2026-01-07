@@ -1,9 +1,11 @@
 use anyhow::Result;
 
+#[allow(dead_code)]
 pub struct MessageBroker {
     // TODO: Implement NATS messaging logic
 }
 
+#[allow(dead_code)]
 impl MessageBroker {
     pub async fn publish_trade(&self) -> Result<()> {
         // TODO: Publish trade event
