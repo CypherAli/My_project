@@ -4,10 +4,9 @@ use redis::aio::ConnectionManager;
 use tokio::sync::mpsc;
 use tracing::info;
 
-#[allow(dead_code)]
 pub struct MatchingEngine {
     nats_client: NatsClient,
-    redis_conn: ConnectionManager,
+    _redis_conn: ConnectionManager,
     workers: usize,
 }
 
@@ -15,7 +14,7 @@ impl MatchingEngine {
     pub fn new(nats_client: NatsClient, redis_conn: ConnectionManager, workers: usize) -> Self {
         Self {
             nats_client,
-            redis_conn,
+            _redis_conn: redis_conn,
             workers,
         }
     }
