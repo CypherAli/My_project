@@ -1,6 +1,5 @@
 use anyhow::Result;
 use tracing::{info, Level};
-use tracing_subscriber;
 
 mod config;
 mod engine;

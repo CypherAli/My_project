@@ -16,6 +16,7 @@ serde_json = "1.0"
 
 # NATS messaging
 async-nats = "0.33"
+futures-util = "0.3"
 
 # Redis
 redis = { version = "0.24", features = ["tokio-comp", "connection-manager"] }

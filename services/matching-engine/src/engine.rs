@@ -1,7 +1,7 @@
 use anyhow::Result;
 use async_nats::Client as NatsClient;
+use futures_util::StreamExt;
 use redis::aio::ConnectionManager;
-use tokio::sync::mpsc;
 use tracing::info;
 
 pub struct MatchingEngine {
