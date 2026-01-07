@@ -23,16 +23,10 @@ impl OrderBook {
     pub fn add_order(&mut self, order: Order) {
         match order.side {
             OrderSide::Buy => {
-                self.bids
-                    .entry(order.price)
-                    .or_default()
-                    .push(order);
+                self.bids.entry(order.price).or_default().push(order);
             }
             OrderSide::Sell => {
-                self.asks
-                    .entry(order.price)
-                    .or_default()
-                    .push(order);
+                self.asks.entry(order.price).or_default().push(order);
             }
         }
     }
