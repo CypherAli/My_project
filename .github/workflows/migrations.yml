@@ -1,0 +1,77 @@
+name: Database Migrations
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'services/gateway/migrations/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'services/gateway/migrations/**'
+
+env:
+  POSTGRES_DB: migration_test_db
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+
+jobs:
+  test-migrations:
+    name: Test Database Migrations
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install golang-migrate
+        run: |
+          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
+          sudo mv migrate /usr/local/bin/
+          migrate -version
+      
+      - name: Run migrations UP
+        run: |
+          migrate -path services/gateway/migrations \
+            -database "postgresql://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@localhost:5432/${{ env.POSTGRES_DB }}?sslmode=disable" \
+            -verbose up
+      
+      - name: Verify database schema
+        run: |
+          docker exec ${{ job.services.postgres.id }} psql -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} -c '\dt'
+      
+      - name: Run migrations DOWN
+        run: |
+          migrate -path services/gateway/migrations \
+            -database "postgresql://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@localhost:5432/${{ env.POSTGRES_DB }}?sslmode=disable" \
+            -verbose down -all
+      
+      - name: Re-run migrations UP (idempotency test)
+        run: |
+          migrate -path services/gateway/migrations \
+            -database "postgresql://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@localhost:5432/${{ env.POSTGRES_DB }}?sslmode=disable" \
+            -verbose up
+      
+      - name: Count tables
+        run: |
+          TABLE_COUNT=$(docker exec ${{ job.services.postgres.id }} psql -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE';")
+          echo "Table count: $TABLE_COUNT"
+          if [ "$TABLE_COUNT" -lt 15 ]; then
+            echo "Error: Expected at least 15 tables, found $TABLE_COUNT"
+            exit 1
+          fi

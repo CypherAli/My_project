@@ -1,0 +1,83 @@
+groups:
+  - name: trading_platform_alerts
+    interval: 30s
+    rules:
+      # Service availability alerts
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "{{ $labels.job }} has been down for more than 1 minute."
+
+      # High error rate
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate on {{ $labels.job }}"
+          description: "Error rate is {{ $value }} errors/sec"
+
+      # High latency
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High latency on {{ $labels.job }}"
+          description: "95th percentile latency is {{ $value }}s"
+
+      # Memory usage
+      - alert: HighMemoryUsage
+        expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.container }}"
+          description: "Memory usage is at {{ $value }}%"
+
+      # CPU usage
+      - alert: HighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total[5m]) > 0.8
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.container }}"
+          description: "CPU usage is at {{ $value }}%"
+
+      # Database connection pool
+      - alert: DatabaseConnectionPoolExhausted
+        expr: database_connections_in_use / database_connections_max > 0.9
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database connection pool almost exhausted"
+          description: "{{ $value }}% of database connections are in use"
+
+      # Order matching delay
+      - alert: OrderMatchingDelay
+        expr: rate(order_matching_duration_seconds[5m]) > 0.01
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Order matching is slow"
+          description: "Average matching time is {{ $value }}s"
+
+      # Trade volume anomaly
+      - alert: TradeVolumeAnomaly
+        expr: abs(rate(trades_total[5m]) - rate(trades_total[1h] offset 1h)) > 100
+        for: 10m
+        labels:
+          severity: info
+        annotations:
+          summary: "Unusual trade volume detected"
+          description: "Trade volume deviated by {{ $value }} from normal"
