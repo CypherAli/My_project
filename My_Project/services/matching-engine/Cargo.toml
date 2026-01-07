@@ -1,0 +1,76 @@
+[package]
+name = "matching-engine"
+version = "0.1.0"
+edition = "2021"
+authors = ["Trading Platform Team"]
+description = "High-performance order matching engine for trading platform"
+
+[workspace]
+members = [
+    ".",
+    "crates/*"
+]
+
+[dependencies]
+# Async runtime
+tokio = { version = "1.35", features = ["full"] }
+tokio-util = "0.7"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# NATS messaging
+async-nats = "0.33"
+
+# Redis
+redis = { version = "0.24", features = ["tokio-comp", "connection-manager"] }
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Configuration
+config = "0.14"
+dotenv = "0.15"
+
+# Time and UUID
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.6", features = ["v4", "serde"] }
+
+# Collections
+dashmap = "5.5"
+crossbeam = "0.8"
+
+# Metrics
+prometheus = "0.13"
+
+# HTTP server for metrics
+axum = "0.7"
+tower = "0.4"
+tower-http = { version = "0.5", features = ["trace"] }
+
+[dev-dependencies]
+criterion = "0.5"
+mockall = "0.12"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+strip = true
+
+[profile.bench]
+inherits = "release"
+
+[[bin]]
+name = "matching-engine"
+path = "src/main.rs"
+
+[[bench]]
+name = "orderbook_benchmark"
+harness = false
