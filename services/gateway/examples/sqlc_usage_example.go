@@ -6,25 +6,25 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/trading-platform/gateway/internal/database/sqlc"
 	_ "github.com/lib/pq"
+	db "github.com/trading-platform/gateway/internal/database/sqlc"
 )
 
 func main() {
 	// Kết nối database
 	connStr := "postgres://trading_user:trading_password@localhost:5432/trading_db?sslmode=disable"
-	db, err := sql.Open("postgres", connStr)
+	conn, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
+	defer conn.Close()
 
 	// Khởi tạo queries
-	queries := sqlc.New(db)
+	queries := db.New(conn)
 	ctx := context.Background()
 
 	// Example 1: Create User
-	user, err := queries.CreateUser(ctx, sqlc.CreateUserParams{
+	user, err := queries.CreateUser(ctx, db.CreateUserParams{
 		Username:     "john_doe",
 		Email:        "john@example.com",
 		PasswordHash: "hashed_password_here",
@@ -46,7 +46,7 @@ func main() {
 	fmt.Printf("Found user: %+v\n", foundUser)
 
 	// Example 3: Create Account
-	account, err := queries.CreateAccount(ctx, sqlc.CreateAccountParams{
+	account, err := queries.CreateAccount(ctx, db.CreateAccountParams{
 		UserID:           user.ID,
 		AccountType:      "spot",
 		Balance:          sql.NullString{String: "1000.00", Valid: true},
@@ -68,12 +68,12 @@ func main() {
 	}
 	fmt.Printf("User has %d accounts\n", len(accounts))
 	for _, acc := range accounts {
-		fmt.Printf("  - Account: %s (%s) - Balance: %s\n", 
+		fmt.Printf("  - Account: %s (%s) - Balance: %s\n",
 			acc.AccountType, acc.Currency, acc.Balance.String)
 	}
 
 	// Example 5: Create Deposit Transaction
-	deposit, err := queries.CreateDeposit(ctx, sqlc.CreateDepositParams{
+	deposit, err := queries.CreateDeposit(ctx, db.CreateDepositParams{
 		AccountID:     account.ID,
 		Amount:        sql.NullString{String: "500.00", Valid: true},
 		Currency:      "USD",
@@ -89,7 +89,7 @@ func main() {
 	fmt.Printf("Created deposit: %+v\n", deposit)
 
 	// Example 6: Update Account Balance
-	updatedAccount, err := queries.UpdateAccountBalance(ctx, sqlc.UpdateAccountBalanceParams{
+	updatedAccount, err := queries.UpdateAccountBalance(ctx, db.UpdateAccountBalanceParams{
 		ID:               account.ID,
 		Balance:          sql.NullString{String: "1500.00", Valid: true},
 		AvailableBalance: sql.NullString{String: "1500.00", Valid: true},

@@ -51,7 +51,7 @@ func main() {
 		}
 	}()
 
-	log.Printf("🚀 Gateway server started on port %s", port)
+	log.Printf(" Gateway server started on port %s", port)
 
 	// Wait for interrupt signal
 	quit := make(chan os.Signal, 1)
