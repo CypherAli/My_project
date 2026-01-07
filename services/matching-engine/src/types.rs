@@ -53,7 +53,7 @@ pub struct Trade {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OrderBookSnapshot {
     pub symbol: String,
-    pub bids: Vec<(u64, u64)>,  // (price, quantity)
-    pub asks: Vec<(u64, u64)>,  // (price, quantity)
+    pub bids: Vec<(u64, u64)>, // (price, quantity)
+    pub asks: Vec<(u64, u64)>, // (price, quantity)
     pub timestamp: DateTime<Utc>,
 }
