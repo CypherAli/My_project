@@ -29,9 +29,15 @@ dist/
 build/
 target/
 *.exe
+*.exe~
 *.dll
 *.so
 *.dylib
+*.test
+*.out
+
+# Go workspace file
+go.work
 
 # Test coverage
 coverage/
