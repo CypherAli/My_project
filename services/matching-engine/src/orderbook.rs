@@ -3,12 +3,14 @@ use std::collections::BTreeMap;
 use uuid::Uuid;
 
 /// High-performance order book implementation
+#[allow(dead_code)]
 pub struct OrderBook {
     symbol: String,
     bids: BTreeMap<u64, Vec<Order>>, // Price -> Orders (sorted descending)
     asks: BTreeMap<u64, Vec<Order>>, // Price -> Orders (sorted ascending)
 }
 
+#[allow(dead_code)]
 impl OrderBook {
     pub fn new(symbol: String) -> Self {
         Self {
@@ -23,22 +25,21 @@ impl OrderBook {
             OrderSide::Buy => {
                 self.bids
                     .entry(order.price)
-                    .or_insert_with(Vec::new)
+                    .or_default()
                     .push(order);
             }
             OrderSide::Sell => {
                 self.asks
                     .entry(order.price)
-                    .or_insert_with(Vec::new)
+                    .or_default()
                     .push(order);
             }
         }
     }
 
     pub fn match_order(&mut self, _order: Order) -> Vec<Trade> {
-        let trades = Vec::new();
         // TODO: Implement matching logic
-        trades
+        Vec::new()
     }
 
     pub fn cancel_order(&mut self, _order_id: Uuid) -> bool {
