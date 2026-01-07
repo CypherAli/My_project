@@ -48,6 +48,12 @@ ALTER TABLE trading_pairs
 ALTER TABLE accounts
     DROP COLUMN IF EXISTS currency_id;
 
+-- Drop foreign key constraints first
+ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_account_id_fkey;
+ALTER TABLE transactions DROP CONSTRAINT IF EXISTS transactions_account_id_fkey;
+ALTER TABLE trades DROP CONSTRAINT IF EXISTS trades_buyer_account_id_fkey;
+ALTER TABLE trades DROP CONSTRAINT IF EXISTS trades_seller_account_id_fkey;
+
 -- Drop tables
 DROP TABLE IF EXISTS order_metrics;
 DROP TABLE IF EXISTS user_fee_tiers;
