@@ -7,6 +7,7 @@ pub struct Config {
     pub engine_workers: usize,
     pub nats_url: String,
     pub redis_url: String,
+    #[allow(dead_code)]
     pub log_level: String,
 }
 
