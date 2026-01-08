@@ -22,7 +22,7 @@ func NewRedisListener(redisAddr string, hub *websocket.Hub) *RedisListener {
 
 func (l *RedisListener) Start() {
 	ctx := context.Background()
-	
+
 	// Subscribe kênh mà Rust đang bắn tin vào
 	// (Lưu ý: Tên kênh phải khớp với Rust: "ob_update:BTC/USDT")
 	pubsub := l.rdb.Subscribe(ctx, "ob_update:BTC/USDT")
