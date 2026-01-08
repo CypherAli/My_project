@@ -9,6 +9,7 @@ import (
 	"github.com/trading-platform/gateway/internal/config"
 	db "github.com/trading-platform/gateway/internal/database/sqlc"
 	"github.com/trading-platform/gateway/internal/util"
+	"github.com/trading-platform/gateway/internal/websocket"
 )
 
 // Server serves HTTP requests for our trading service
@@ -16,15 +17,17 @@ type Server struct {
 	config   config.Config
 	store    db.Store
 	router   *gin.Engine
-	natsConn *nats.Conn // NATS connection
+	natsConn *nats.Conn         // NATS connection
+	wsHub    *websocket.Hub     // WebSocket Hub
 }
 
 // NewServer creates a new HTTP server and setup routing
-func NewServer(cfg config.Config, store db.Store, nc *nats.Conn) *Server {
+func NewServer(cfg config.Config, store db.Store, nc *nats.Conn, wsHub *websocket.Hub) *Server {
 	server := &Server{
 		config:   cfg,
 		store:    store,
 		natsConn: nc,
+		wsHub:    wsHub,
 	}
 	router := gin.Default()
 
@@ -50,6 +53,9 @@ func NewServer(cfg config.Config, store db.Store, nc *nats.Conn) *Server {
 	// --- NHÓM PUBLIC ROUTES (Ai cũng gọi được) ---
 	router.POST("/api/v1/auth/register", userHandler.RegisterUser)
 	router.POST("/api/v1/auth/login", userHandler.LoginUser)
+
+	// WebSocket endpoint (Public route)
+	router.GET("/ws", wsHub.HandleWebSocket)
 
 	// Health check
 	router.GET("/health", func(c *gin.Context) {

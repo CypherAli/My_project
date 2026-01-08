@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -20,10 +21,11 @@ func NewOrderHandler(nc *nats.Conn) *OrderHandler {
 }
 
 type createOrderRequest struct {
-	Symbol string `json:"symbol" binding:"required"`
-	Price  string `json:"price" binding:"required"`
-	Amount string `json:"amount" binding:"required"`
-	Side   string `json:"side" binding:"required,oneof=Bid Ask"`
+	Symbol   string  `json:"symbol" binding:"required"`
+	Price    float64 `json:"price" binding:"required,gt=0"`
+	Amount   float64 `json:"amount" binding:"required,gt=0"`
+	Quantity float64 `json:"quantity"` // Alias for amount
+	Side     string  `json:"side" binding:"required"`
 }
 
 func (h *OrderHandler) PlaceOrder(ctx *gin.Context) {
@@ -31,6 +33,20 @@ func (h *OrderHandler) PlaceOrder(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	// Cho phép dùng quantity hoặc amount
+	amount := req.Amount
+	if amount == 0 && req.Quantity > 0 {
+		amount = req.Quantity
+	}
+
+	// Chuẩn hóa side: buy/sell -> Bid/Ask
+	side := req.Side
+	if side == "buy" {
+		side = "Bid"
+	} else if side == "sell" {
+		side = "Ask"
 	}
 
 	// 1. Lấy UserID từ Token (tạm thời chưa dùng, sẽ dùng sau)
@@ -41,16 +57,16 @@ func (h *OrderHandler) PlaceOrder(ctx *gin.Context) {
 	// 2. Tạo Order ID (Tạm thời dùng timestamp, sau này dùng Snowflake ID hoặc Sequence DB)
 	orderID := uint64(time.Now().UnixNano())
 
-	// 3. Tạo Command chuẩn format Rust
+	// 3. Tạo Command chuẩn format Rust (chuyển số về string)
 	cmd := models.Command{
 		Type: "Place",
 		Data: models.OrderData{
 			ID:        orderID,
 			UserID:    userID,
 			Symbol:    req.Symbol,
-			Price:     req.Price,
-			Amount:    req.Amount,
-			Side:      req.Side,
+			Price:     fmt.Sprintf("%.8f", req.Price),
+			Amount:    fmt.Sprintf("%.8f", amount),
+			Side:      side,
 			Timestamp: time.Now().Unix(),
 		},
 	}

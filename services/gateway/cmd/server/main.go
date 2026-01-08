@@ -13,6 +13,7 @@ import (
 	"github.com/trading-platform/gateway/internal/api"
 	"github.com/trading-platform/gateway/internal/config"
 	db "github.com/trading-platform/gateway/internal/database/sqlc"
+	"github.com/trading-platform/gateway/internal/websocket"
 	"github.com/trading-platform/gateway/internal/worker"
 )
 
@@ -68,8 +69,22 @@ func main() {
 		}
 	}()
 
+	// 1. Khởi tạo WebSocket Hub
+	log.Println("🔌 Initializing WebSocket Hub...")
+	wsHub := websocket.NewHub()
+	go wsHub.Run() // Chạy Hub ngầm
+
+	// 2. Khởi tạo Redis Listener để cầu nối dữ liệu
+	log.Println("📡 Starting Redis Listener...")
+	redisAddr := os.Getenv("REDIS_URL")
+	if redisAddr == "" {
+		redisAddr = "localhost:6379" // Default Redis address
+	}
+	redisListener := worker.NewRedisListener(redisAddr, wsHub)
+	go redisListener.Start() // Chạy Listener ngầm
+
 	// Create and start server
-	server := api.NewServer(*cfg, store, nc)
+	server := api.NewServer(*cfg, store, nc, wsHub)
 
 	address := fmt.Sprintf(":%s", cfg.Server.Port)
 	log.Printf("🚀 Gateway server starting on port %s", cfg.Server.Port)
