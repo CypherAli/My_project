@@ -3,25 +3,22 @@ package main
 import (
 	"database/sql"
 	"log"
-	"os"
 
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/trading-platform/gateway/api"
 	db "github.com/trading-platform/gateway/internal/database/sqlc"
+	"github.com/trading-platform/gateway/internal/util"
 )
 
 func main() {
-	// Load environment variables
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found, using system environment variables")
+	// 1. Load Config từ file .env
+	config, err := util.LoadConfig(".")
+	if err != nil {
+		log.Fatal("cannot load config:", err)
 	}
 
-	// 1. Kết nối Database
-	// Hardcode để test
-	connString := "host=localhost port=5433 user=trading_user password=trading_password dbname=trading_db sslmode=disable"
-
-	conn, err := sql.Open("postgres", connString)
+	// 2. Kết nối Database (sử dụng config.DBSource)
+	conn, err := sql.Open("postgres", config.DBSource)
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
 	}
@@ -34,20 +31,15 @@ func main() {
 
 	log.Println("✅ Database connected successfully")
 
-	// 2. Khởi tạo Store từ sqlc
+	// 3. Khởi tạo Store từ sqlc
 	store := db.New(conn)
 
-	// 3. Khởi tạo Server
-	server := api.NewServer(store)
+	// 4. Khởi tạo Server (truyền config vào)
+	server := api.NewServer(config, store)
 
-	// 4. Chạy Server
-	port := os.Getenv("GATEWAY_PORT")
-	if port == "" {
-		port = "8080"
-	}
-
-	log.Printf("🚀 Server starting on port %s...\n", port)
-	err = server.Start("0.0.0.0:" + port)
+	// 5. Chạy Server (sử dụng config.ServerAddress)
+	log.Printf("🚀 Server starting on %s...\n", config.ServerAddress)
+	err = server.Start(config.ServerAddress)
 	if err != nil {
 		log.Fatal("cannot start server:", err)
 	}

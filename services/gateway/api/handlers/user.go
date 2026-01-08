@@ -12,11 +12,12 @@ import (
 )
 
 type UserHandler struct {
-	store *db.Queries // Sử dụng Queries được sinh ra từ sqlc
+	store  *db.Queries // Sử dụng Queries được sinh ra từ sqlc
+	config util.Config // Config chứa JWT secret và các cấu hình khác
 }
 
-func NewUserHandler(store *db.Queries) *UserHandler {
-	return &UserHandler{store: store}
+func NewUserHandler(store *db.Queries, config util.Config) *UserHandler {
+	return &UserHandler{store: store, config: config}
 }
 
 // Struct quy định dữ liệu client gửi lên
@@ -121,4 +122,60 @@ func (h *UserHandler) RegisterUser(ctx *gin.Context) {
 		},
 	}
 	ctx.JSON(http.StatusCreated, rsp)
+}
+
+// Struct cho Login Request
+type loginUserRequest struct {
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required,min=6"`
+}
+
+// Struct cho Login Response
+type loginUserResponse struct {
+	AccessToken string       `json:"access_token"`
+	User        userResponse `json:"user"` // Tận dụng lại userResponse cũ
+}
+
+// LoginUser xử lý đăng nhập người dùng
+func (h *UserHandler) LoginUser(ctx *gin.Context) {
+	var req loginUserRequest
+	// 1. Validate Input
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 2. Tìm user trong DB
+	user, err := h.store.GetUserByEmail(ctx, req.Email)
+	if err != nil {
+		// Không tìm thấy user
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+		return
+	}
+
+	// 3. Kiểm tra Password
+	err = util.CheckPassword(req.Password, user.PasswordHash)
+	if err != nil {
+		// Sai password
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+		return
+	}
+
+	// 4. Tạo Access Token (sử dụng config để lấy secret và duration)
+	accessToken, err := util.CreateToken(user.Username, h.config.AccessTokenDuration, h.config.JWTSecret)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create access token"})
+		return
+	}
+
+	// 5. Trả về Token và thông tin User
+	rsp := loginUserResponse{
+		AccessToken: accessToken,
+		User: userResponse{
+			Username: user.Username,
+			Email:    user.Email,
+			UserID:   user.ID.String(),
+		},
+	}
+	ctx.JSON(http.StatusOK, rsp)
 }

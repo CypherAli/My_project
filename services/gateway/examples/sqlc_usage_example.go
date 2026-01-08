@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 	db "github.com/trading-platform/gateway/internal/database/sqlc"
 )
@@ -75,12 +76,12 @@ func main() {
 	// Example 5: Create Deposit Transaction
 	deposit, err := queries.CreateDeposit(ctx, db.CreateDepositParams{
 		AccountID:     account.ID,
-		Amount:        sql.NullString{String: "500.00", Valid: true},
+		Amount:        "500.00",
 		Currency:      "USD",
-		BalanceBefore: sql.NullString{String: "1000.00", Valid: true},
-		BalanceAfter:  sql.NullString{String: "1500.00", Valid: true},
+		BalanceBefore: "1000.00",
+		BalanceAfter:  "1500.00",
 		Status:        "completed",
-		ReferenceID:   sql.NullString{String: "DEP-12345", Valid: true},
+		ReferenceID:   uuid.NullUUID{UUID: uuid.MustParse("12345678-1234-1234-1234-123456789012"), Valid: true},
 	})
 	if err != nil {
 		log.Printf("Error creating deposit: %v", err)
