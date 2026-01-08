@@ -1,39 +1,59 @@
 mod models;
 mod orderbook;
-mod engine; // Nhớ khai báo module mới
+mod engine;
 
 #[cfg(test)]
 mod tests;
 
-use models::{Command, Order, Side};
 use engine::MatchingEngine;
-use rust_decimal_macros::dec; // Macro để viết số thập phân nhanh
+use models::Command;
+use futures::StreamExt; // Để dùng hàm .next() cho stream
+use std::str::from_utf8;
 
-fn main() {
-    println!("🚀 Starting Matching Engine v1.0...");
+#[tokio::main]
+async fn main() -> Result<(), anyhow::Error> {
+    println!("🚀 Trading Engine v1.0 starting...");
+
+    // 1. Kết nối đến NATS Server
+    let nats_url = std::env::var("NATS_URL").unwrap_or_else(|_| "nats://localhost:4222".to_string());
+    println!("🔌 Connecting to NATS at {}...", nats_url);
     
+    let client = async_nats::connect(nats_url).await?;
+    println!("✅ Connected to NATS!");
+
+    // 2. Subscribe (Lắng nghe) topic "orders"
+    let mut subscriber = client.subscribe("orders").await?;
+    println!("🎧 Listening on subject 'orders'...");
+
+    // 3. Khởi tạo Engine
     let mut engine = MatchingEngine::new();
 
-    // Giả lập một chuỗi các lệnh gửi đến Engine (thay vì nhập tay)
-    let commands = vec![
-        // 1. Đặt lệnh Bán BTC (Tạo thanh khoản)
-        Command::Place(Order::new(1, 101, dec!(50000), dec!(1.0), Side::Ask)),
-        
-        // 2. Đặt lệnh Mua BTC (Khớp ngay)
-        Command::Place(Order::new(2, 102, dec!(50000), dec!(0.5), Side::Bid)),
-        
-        // 3. Hủy lệnh (Thử hủy lệnh ID 1 đã bị khớp 1 phần)
-        Command::Cancel(1),
-    ];
+    // 4. Vòng lặp xử lý Message
+    while let Some(message) = subscriber.next().await {
+        // Parse message từ bytes sang JSON String
+        let json_str = from_utf8(&message.payload)?;
+        println!("\n📩 Received: {}", json_str);
 
-    // Vòng lặp xử lý (Event Loop)
-    for cmd in commands {
-        println!("\n📥 Input Command: {:?}", cmd);
-        
-        let events = engine.process_command(cmd);
-        
-        for event in events {
-            println!("   📤 Output Event: {:?}", event);
+        // Parse từ JSON sang Command struct
+        match serde_json::from_str::<Command>(json_str) {
+            Ok(cmd) => {
+                // Xử lý lệnh
+                let events = engine.process_command(cmd);
+                
+                // Publish kết quả (Event) ngược lại NATS
+                for event in events {
+                    let event_json = serde_json::to_string(&event)?;
+                    println!("   📤 Publishing Event: {}", event_json);
+                    
+                    // Bắn event ra topic "events"
+                    client.publish("events", event_json.into()).await?;
+                }
+            },
+            Err(e) => {
+                eprintln!("❌ Error parsing command: {}", e);
+            }
         }
     }
+
+    Ok(())
 }
