@@ -17,8 +17,8 @@ type Server struct {
 	config   config.Config
 	store    db.Store
 	router   *gin.Engine
-	natsConn *nats.Conn         // NATS connection
-	wsHub    *websocket.Hub     // WebSocket Hub
+	natsConn *nats.Conn     // NATS connection
+	wsHub    *websocket.Hub // WebSocket Hub
 }
 
 // NewServer creates a new HTTP server and setup routing
