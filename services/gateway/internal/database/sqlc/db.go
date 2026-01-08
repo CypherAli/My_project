@@ -17,6 +17,24 @@ type DBTX interface {
 	QueryRow(context.Context, string, ...interface{}) pgx.Row
 }
 
+// Querier defines all database query methods
+type Querier interface {
+	// User methods
+	GetUserByUsername(ctx context.Context, username string) (Users, error)
+	GetUserByID(ctx context.Context, id int64) (Users, error)
+	CreateUser(ctx context.Context, arg CreateUserParams) (Users, error)
+	
+	// Account methods
+	GetAccountsByUserID(ctx context.Context, userID int32) ([]Accounts, error)
+	GetAccountByUserAndType(ctx context.Context, arg GetAccountByUserAndTypeParams) (Accounts, error)
+	CreateAccount(ctx context.Context, arg CreateAccountParams) (Accounts, error)
+	UpdateAccountBalance(ctx context.Context, arg UpdateAccountBalanceParams) (Accounts, error)
+	
+	// Transaction methods
+	CreateDeposit(ctx context.Context, arg CreateDepositParams) (Transactions, error)
+	GetTransactionsByAccountID(ctx context.Context, accountID int64) ([]Transactions, error)
+}
+
 // Queries provides methods to interact with the database
 type Queries struct {
 	db DBTX

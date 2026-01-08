@@ -34,3 +34,37 @@ type Transactions struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+// --- Parameter Types for Queries ---
+
+// CreateUserParams contains the parameters for creating a user
+type CreateUserParams struct {
+	Username string
+	Email    string
+	Password string
+}
+
+// GetAccountByUserAndTypeParams contains the parameters for getting an account by user and currency
+type GetAccountByUserAndTypeParams struct {
+	UserID   int32
+	Currency string
+}
+
+// CreateAccountParams contains the parameters for creating an account
+type CreateAccountParams struct {
+	UserID   int32
+	Currency string
+	Balance  string
+}
+
+// UpdateAccountBalanceParams contains the parameters for updating an account balance
+type UpdateAccountBalanceParams struct {
+	ID     int64
+	Amount string
+}
+
+// CreateDepositParams contains the parameters for creating a deposit transaction
+type CreateDepositParams struct {
+	AccountID int64
+	Amount    string
+}
