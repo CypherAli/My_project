@@ -22,6 +22,7 @@ type Querier interface {
 	// User methods
 	GetUserByUsername(ctx context.Context, username string) (Users, error)
 	GetUserByID(ctx context.Context, id int64) (Users, error)
+	GetUserByEmail(ctx context.Context, email string) (Users, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (Users, error)
 	
 	// Account methods

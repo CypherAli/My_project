@@ -1,7 +1,6 @@
 package db
 
 import (
-	"context"
 	"time"
 )
 
@@ -81,20 +80,4 @@ type DepositTxParams struct {
 type DepositTxResult struct {
 	Account     Accounts     `json:"account"`
 	Transaction Transactions `json:"transaction"`
-}
-
-// --- Querier Interface ---
-
-// Querier contains all database query methods
-type Querier interface {
-	CreateUser(ctx context.Context, arg CreateUserParams) (Users, error)
-	GetUserByUsername(ctx context.Context, username string) (Users, error)
-	GetUserByEmail(ctx context.Context, email string) (Users, error)
-
-	CreateAccount(ctx context.Context, arg CreateAccountParams) (Accounts, error)
-	GetAccountByUserAndType(ctx context.Context, arg GetAccountByUserAndTypeParams) (Accounts, error)
-	GetAccountsByUserID(ctx context.Context, userID int32) ([]Accounts, error)
-	UpdateAccountBalance(ctx context.Context, arg UpdateAccountBalanceParams) (Accounts, error)
-
-	CreateDeposit(ctx context.Context, arg CreateDepositParams) (Transactions, error)
 }
