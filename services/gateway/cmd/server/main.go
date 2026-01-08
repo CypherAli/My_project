@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/nats-io/nats.go"
 	"github.com/trading-platform/gateway/internal/api"
 	"github.com/trading-platform/gateway/internal/config"
 	db "github.com/trading-platform/gateway/internal/database/sqlc"
@@ -41,8 +42,17 @@ func main() {
 	// Tạo Store để quản lý database operations
 	store := db.NewStore(connPool)
 
+	// Kết nối NATS
+	log.Println("🔌 Connecting to NATS...")
+	nc, err := nats.Connect("nats://localhost:4222")
+	if err != nil {
+		log.Fatalf("Cannot connect to NATS: %v", err)
+	}
+	defer nc.Close()
+	log.Println("✅ NATS connected successfully")
+
 	// Create and start server
-	server := api.NewServer(*cfg, store)
+	server := api.NewServer(*cfg, store, nc)
 
 	address := fmt.Sprintf(":%s", cfg.Server.Port)
 	log.Printf("🚀 Gateway server starting on port %s", cfg.Server.Port)

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/nats-io/nats.go"
 	"github.com/trading-platform/gateway/internal/api/handlers"
 	"github.com/trading-platform/gateway/internal/config"
 	db "github.com/trading-platform/gateway/internal/database/sqlc"
@@ -12,16 +13,18 @@ import (
 
 // Server serves HTTP requests for our trading service
 type Server struct {
-	config config.Config
-	store  db.Store
-	router *gin.Engine
+	config   config.Config
+	store    db.Store
+	router   *gin.Engine
+	natsConn *nats.Conn // NATS connection
 }
 
 // NewServer creates a new HTTP server and setup routing
-func NewServer(cfg config.Config, store db.Store) *Server {
+func NewServer(cfg config.Config, store db.Store, nc *nats.Conn) *Server {
 	server := &Server{
-		config: cfg,
-		store:  store,
+		config:   cfg,
+		store:    store,
+		natsConn: nc,
 	}
 	router := gin.Default()
 
@@ -42,6 +45,7 @@ func NewServer(cfg config.Config, store db.Store) *Server {
 	// Create handlers
 	userHandler := handlers.NewUserHandler(cfg, store)
 	accountHandler := handlers.NewAccountHandler(store)
+	orderHandler := handlers.NewOrderHandler(nc) // NATS Order Handler
 
 	// --- NHÓM PUBLIC ROUTES (Ai cũng gọi được) ---
 	router.POST("/api/v1/auth/register", userHandler.RegisterUser)
@@ -60,6 +64,9 @@ func NewServer(cfg config.Config, store db.Store) *Server {
 	authRoutes.GET("/api/v1/accounts", accountHandler.ListAccounts)
 	authRoutes.POST("/api/v1/accounts/deposit", accountHandler.AddDeposit)
 	authRoutes.GET("/api/v1/accounts/:currency", accountHandler.GetAccountBalance)
+
+	// Order routes (protected)
+	authRoutes.POST("/api/v1/orders", orderHandler.PlaceOrder)
 
 	// Tạm thời thử nghiệm: Route lấy thông tin User hiện tại
 	authRoutes.GET("/api/v1/users/me", func(ctx *gin.Context) {
