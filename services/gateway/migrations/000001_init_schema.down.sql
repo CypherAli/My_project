@@ -28,6 +28,7 @@ DROP INDEX IF EXISTS idx_users_username;
 DROP INDEX IF EXISTS idx_users_email;
 
 -- Drop tables in reverse order (respecting foreign key constraints)
+-- Drop dependent tables first
 DROP TABLE IF EXISTS audit_logs;
 DROP TABLE IF EXISTS api_keys;
 DROP TABLE IF EXISTS sessions;
@@ -35,5 +36,15 @@ DROP TABLE IF EXISTS transactions;
 DROP TABLE IF EXISTS trades;
 DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS trading_pairs;
+
+-- Drop foreign key constraints before dropping referenced tables
+ALTER TABLE IF EXISTS orders DROP CONSTRAINT IF EXISTS orders_account_id_fkey;
+ALTER TABLE IF EXISTS orders DROP CONSTRAINT IF EXISTS orders_user_id_fkey;
+ALTER TABLE IF EXISTS transactions DROP CONSTRAINT IF EXISTS transactions_account_id_fkey;
+ALTER TABLE IF EXISTS trades DROP CONSTRAINT IF EXISTS trades_buyer_id_fkey;
+ALTER TABLE IF EXISTS trades DROP CONSTRAINT IF EXISTS trades_seller_id_fkey;
+ALTER TABLE IF EXISTS accounts DROP CONSTRAINT IF EXISTS accounts_user_id_fkey;
+
+-- Now safe to drop main tables
 DROP TABLE IF EXISTS accounts;
 DROP TABLE IF EXISTS users;
