@@ -1,0 +1,19 @@
+[package]
+name = "matching-engine"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# 1. Tính toán chính xác (Financial Standard)
+rust_decimal = "1.33"
+rust_decimal_macros = "1.33"
+
+# 2. Xử lý JSON & Serialize
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# 3. Asynchronous Runtime (Để chạy server sau này)
+tokio = { version = "1", features = ["full"] }
+
+# 4. Error handling
+anyhow = "1.0"
