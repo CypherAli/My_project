@@ -173,4 +173,34 @@ impl OrderBook {
 
         trades
     }
+
+    /// Lấy độ sâu thị trường (Market Depth) - Top N mức giá tốt nhất
+    /// 
+    /// # Arguments
+    /// * `limit` - Số lượng mức giá muốn lấy (ví dụ: top 10)
+    /// * `is_bid` - true để lấy bên Mua (Bids), false để lấy bên Bán (Asks)
+    /// 
+    /// # Returns
+    /// Vec<(Price, Total Amount)> - Danh sách giá và tổng khối lượng ở mức giá đó
+    pub fn get_depth(&self, limit: usize, is_bid: bool) -> Vec<(String, String)> {
+        let mut result = Vec::new();
+        
+        if is_bid {
+            // Bids: Giá cao nhất trước (Best Bid = giá cao nhất)
+            // BTreeMap tăng dần -> cần rev() để lấy giá cao nhất
+            for (price, orders) in self.bids.iter().rev().take(limit) {
+                let total_amount: Decimal = orders.iter().map(|o| o.amount).sum();
+                result.push((price.to_string(), total_amount.to_string()));
+            }
+        } else {
+            // Asks: Giá thấp nhất trước (Best Ask = giá thấp nhất)
+            // BTreeMap tăng dần -> iter() thường để lấy giá thấp nhất
+            for (price, orders) in self.asks.iter().take(limit) {
+                let total_amount: Decimal = orders.iter().map(|o| o.amount).sum();
+                result.push((price.to_string(), total_amount.to_string()));
+            }
+        }
+
+        result
+    }
 }

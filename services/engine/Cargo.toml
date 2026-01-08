@@ -21,3 +21,15 @@ anyhow = "1.0"
 # 5. NATS Message Queue Integration
 async-nats = "0.33"
 futures = "0.3"
+
+# 6. Redis Cache Integration
+redis = { version = "0.24", features = ["tokio-comp", "connection-manager"] }
+
+# Additional binaries
+[[bin]]
+name = "matching-engine"
+path = "src/main.rs"
+
+[[bin]]
+name = "test-client"
+path = "src/test_client.rs"

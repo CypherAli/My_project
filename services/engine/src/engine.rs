@@ -70,4 +70,9 @@ impl MatchingEngine {
 
         vec![EngineEvent::OrderCancelled { order_id, success }]
     }
+
+    // MỚI: Hàm lấy reference đến OrderBook của một symbol (để snapshot)
+    pub fn get_orderbook(&self, symbol: &str) -> Option<&OrderBook> {
+        self.orderbooks.get(symbol)
+    }
 }
