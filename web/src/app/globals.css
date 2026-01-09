@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+/* Thêm màu nền tối cho ngầu */
+body {
+  background-color: #0b0e11; /* Màu nền kiểu Binance */
+  color: #eaecef;
+}
