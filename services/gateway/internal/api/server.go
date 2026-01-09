@@ -48,7 +48,7 @@ func NewServer(cfg config.Config, store db.Store, nc *nats.Conn, wsHub *websocke
 	// Create handlers
 	userHandler := handlers.NewUserHandler(cfg, store)
 	accountHandler := handlers.NewAccountHandler(store)
-	orderHandler := handlers.NewOrderHandler(nc) // NATS Order Handler
+	orderHandler := handlers.NewOrderHandler(nc, store) // NATS Order Handler với store
 
 	// --- NHÓM PUBLIC ROUTES (Ai cũng gọi được) ---
 	router.POST("/api/v1/auth/register", userHandler.RegisterUser)
@@ -73,6 +73,8 @@ func NewServer(cfg config.Config, store db.Store, nc *nats.Conn, wsHub *websocke
 
 	// Order routes (protected)
 	authRoutes.POST("/api/v1/orders", orderHandler.PlaceOrder)
+	authRoutes.GET("/api/v1/orders/open", orderHandler.ListOpenOrders)
+	authRoutes.POST("/api/v1/orders/cancel", orderHandler.CancelOrder)
 
 	// Tạm thời thử nghiệm: Route lấy thông tin User hiện tại
 	authRoutes.GET("/api/v1/users/me", func(ctx *gin.Context) {

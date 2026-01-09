@@ -56,9 +56,14 @@ func main() {
 	defer nc.Close()
 	log.Println("✅ NATS connected successfully")
 
+	// 1. Khởi tạo WebSocket Hub (di chuyển lên trước để có thể dùng trong processor)
+	log.Println("🔌 Initializing WebSocket Hub...")
+	wsHub := websocket.NewHub()
+	go wsHub.Run() // Chạy Hub ngầm
+
 	// Khởi động Event Processor (Worker) trong goroutine riêng
 	log.Println("🔧 Starting Event Processor Worker...")
-	processor := worker.NewEventProcessor(store, nc)
+	processor := worker.NewEventProcessor(store, nc, wsHub) // Truyền wsHub vào
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -68,11 +73,6 @@ func main() {
 			log.Fatalf("Event processor error: %v", err)
 		}
 	}()
-
-	// 1. Khởi tạo WebSocket Hub
-	log.Println("🔌 Initializing WebSocket Hub...")
-	wsHub := websocket.NewHub()
-	go wsHub.Run() // Chạy Hub ngầm
 
 	// 2. Khởi tạo Redis Listener để cầu nối dữ liệu
 	log.Println("📡 Starting Redis Listener...")

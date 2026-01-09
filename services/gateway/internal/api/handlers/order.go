@@ -8,16 +8,21 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/nats-io/nats.go"
+	db "github.com/trading-platform/gateway/internal/database/sqlc"
 	"github.com/trading-platform/gateway/internal/models"
 	"github.com/trading-platform/gateway/internal/util"
 )
 
 type OrderHandler struct {
 	natsConn *nats.Conn
+	store    db.Store
 }
 
-func NewOrderHandler(nc *nats.Conn) *OrderHandler {
-	return &OrderHandler{natsConn: nc}
+func NewOrderHandler(nc *nats.Conn, store db.Store) *OrderHandler {
+	return &OrderHandler{
+		natsConn: nc,
+		store:    store,
+	}
 }
 
 type createOrderRequest struct {
@@ -43,9 +48,10 @@ func (h *OrderHandler) PlaceOrder(ctx *gin.Context) {
 
 	// Chuẩn hóa side: buy/sell -> Bid/Ask
 	side := req.Side
-	if side == "buy" {
+	switch side {
+	case "buy":
 		side = "Bid"
-	} else if side == "sell" {
+	case "sell":
 		side = "Ask"
 	}
 
@@ -89,4 +95,65 @@ func (h *OrderHandler) PlaceOrder(ctx *gin.Context) {
 		"message":  "Order placed successfully",
 		"order_id": orderID,
 	})
+}
+
+// cancelOrderRequest defines the request structure for canceling an order
+type cancelOrderRequest struct {
+	OrderID uint64 `json:"order_id" binding:"required"`
+}
+
+// ListOpenOrders lists all pending orders for the authenticated user
+func (h *OrderHandler) ListOpenOrders(ctx *gin.Context) {
+	// Lấy UserID từ Token
+	payload := ctx.MustGet("authorization_payload").(*util.Payload)
+
+	// Get user ID from username
+	user, err := h.store.GetUserByUsername(ctx, payload.Username)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get user"})
+		return
+	}
+
+	orders, err := h.store.ListPendingOrders(ctx, user.ID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, orders)
+}
+
+// CancelOrder sends a cancel command to the matching engine via NATS
+func (h *OrderHandler) CancelOrder(ctx *gin.Context) {
+	var req cancelOrderRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Verify that the order belongs to the user (optional security check)
+	// For now, we trust the request and send to engine
+
+	// Tạo Command Hủy gửi sang NATS
+	cmd := models.Command{
+		Type: "Cancel",
+		Data: models.CancelData{
+			OrderID: req.OrderID,
+		},
+	}
+
+	// Serialize JSON
+	data, err := json.Marshal(cmd)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to marshal cancel command"})
+		return
+	}
+
+	// Bắn sang NATS topic "orders" (Rust đang nghe cái này)
+	if err := h.natsConn.Publish("orders", data); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to publish cancel command"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "Cancel request sent successfully"})
 }

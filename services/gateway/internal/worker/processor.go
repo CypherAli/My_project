@@ -8,19 +8,22 @@ import (
 	"github.com/nats-io/nats.go"
 	db "github.com/trading-platform/gateway/internal/database/sqlc"
 	"github.com/trading-platform/gateway/internal/models"
+	"github.com/trading-platform/gateway/internal/websocket"
 )
 
 // EventProcessor xử lý các event từ Rust Engine
 type EventProcessor struct {
 	store    db.Store
 	natsConn *nats.Conn
+	hub      *websocket.Hub // Thêm Hub để broadcast trades
 }
 
 // NewEventProcessor tạo processor mới
-func NewEventProcessor(store db.Store, nc *nats.Conn) *EventProcessor {
+func NewEventProcessor(store db.Store, nc *nats.Conn, hub *websocket.Hub) *EventProcessor {
 	return &EventProcessor{
 		store:    store,
 		natsConn: nc,
+		hub:      hub,
 	}
 }
 
@@ -126,6 +129,16 @@ func (p *EventProcessor) handleTradeExecuted(data interface{}) {
 	}
 
 	log.Printf("💰 DB Updated: Trade stored %s @ %s", tradeData.Trade.Amount, tradeData.Trade.Price)
+
+	// Broadcast trade event to WebSocket clients for chart
+	msg := map[string]interface{}{
+		"type": "trade",
+		"data": tradeData.Trade,
+	}
+	jsonMsg, _ := json.Marshal(msg)
+	p.hub.BroadcastToClients(jsonMsg)
+
+	log.Printf("📊 Trade broadcasted to WebSocket clients")
 
 	// TODO Nâng cao: Sau này sẽ cập nhật số dư (UpdateBalance) tại đây.
 	// Ví dụ: Cộng tiền cho người bán, Trừ tiền người mua (nếu chưa trừ lúc đặt).

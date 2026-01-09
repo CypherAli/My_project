@@ -13,6 +13,10 @@ export default function OrderBook() {
   const [data, setData] = useState<OrderBookData | null>(null);
 
   useEffect(() => {
+    // Throttle để tránh update quá nhanh (gây nhấp nháy)
+    let lastUpdate = 0;
+    const THROTTLE_MS = 200; // Update tối đa mỗi 200ms
+
     // 1. Kết nối WebSocket
     const ws = new WebSocket("ws://localhost:8080/ws");
 
@@ -22,6 +26,12 @@ export default function OrderBook() {
 
     ws.onmessage = (event) => {
       try {
+        // Throttle check
+        const now = Date.now();
+        if (now - lastUpdate < THROTTLE_MS) {
+          return; // Skip update này
+        }
+        lastUpdate = now;
         // 2. Parse dữ liệu nhận được
         // Server Go gửi string JSON, ta parse ra Object
         // Lưu ý: data từ Redis là string dạng "{\"symbol\":...}", cần parse 1 lần
@@ -62,7 +72,7 @@ export default function OrderBook() {
             <span>Amount</span>
           </div>
           <div className="space-y-1">
-            {data.bids.map(([price, amount], i) => (
+            {(data.bids || []).map(([price, amount], i) => (
               <div key={i} className="flex justify-between relative group cursor-pointer hover:bg-green-900/30 p-1 rounded">
                 <span className="text-green-500 font-mono">{parseFloat(price).toFixed(2)}</span>
                 <span className="text-gray-300 font-mono">{parseFloat(amount).toFixed(4)}</span>
@@ -83,7 +93,7 @@ export default function OrderBook() {
             <span>Amount</span>
           </div>
           <div className="space-y-1">
-            {data.asks.map(([price, amount], i) => (
+            {(data.asks || []).map(([price, amount], i) => (
               <div key={i} className="flex justify-between relative group cursor-pointer hover:bg-red-900/30 p-1 rounded">
                 <span className="text-red-500 font-mono">{parseFloat(price).toFixed(2)}</span>
                 <span className="text-gray-300 font-mono">{parseFloat(amount).toFixed(4)}</span>

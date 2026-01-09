@@ -38,6 +38,7 @@ type Querier interface {
 	// Order methods
 	CreateOrder(ctx context.Context, arg CreateOrderParams) (Orders, error)
 	UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) (Orders, error)
+	ListPendingOrders(ctx context.Context, userID int64) ([]Orders, error)
 
 	// Trade methods
 	CreateTrade(ctx context.Context, arg CreateTradeParams) (Trades, error)
@@ -337,6 +338,38 @@ func (q *Queries) UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusPa
 		&order.CreatedAt,
 	)
 	return order, err
+}
+
+func (q *Queries) ListPendingOrders(ctx context.Context, userID int64) ([]Orders, error) {
+	query := `SELECT id, user_id, symbol, price, amount, side, status, created_at 
+              FROM engine_orders 
+              WHERE user_id = $1 AND status = 'pending' 
+              ORDER BY created_at DESC`
+
+	rows, err := q.db.Query(ctx, query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var orders []Orders
+	for rows.Next() {
+		var order Orders
+		if err := rows.Scan(
+			&order.ID,
+			&order.UserID,
+			&order.Symbol,
+			&order.Price,
+			&order.Amount,
+			&order.Side,
+			&order.Status,
+			&order.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		orders = append(orders, order)
+	}
+	return orders, rows.Err()
 }
 
 // --- Trade Queries Implementation ---

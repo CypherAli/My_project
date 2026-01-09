@@ -1,18 +1,51 @@
 import OrderBook from "@/components/OrderBook";
+import Chart from "@/components/Chart";
+import OrderForm from "@/components/OrderForm";
+import OpenOrders from "@/components/OpenOrders";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#0b0e11] text-white flex flex-col items-center justify-center p-10">
-      <h1 className="text-4xl font-bold text-blue-500 mb-8">🚀 Trading Platform UI</h1>
-      
-      <div className="flex gap-8 items-start">
-        {/* Sau này sẽ đặt Chart ở bên trái */}
-        <div className="w-[600px] h-[400px] bg-gray-900 rounded-lg flex items-center justify-center border border-gray-800 text-gray-600">
-          [Chart Coming Soon]
+    <main className="min-h-screen bg-[#0b0e11] text-gray-300 flex flex-col">
+      {/* Header */}
+      <header className="h-14 border-b border-gray-800 flex items-center px-6 bg-[#181a20]">
+        <div className="font-bold text-xl text-yellow-500 tracking-wider mr-8">
+          BINANCE <span className="text-xs text-gray-500 ml-1">CLONE</span>
+        </div>
+        <div className="text-sm font-medium text-white">BTC/USDT</div>
+        <div className="text-xs text-green-500 ml-4 font-mono">$49,200.00</div>
+        <div className="ml-auto text-xs text-gray-500">
+          Engine: <span className="text-orange-500">Rust</span> • Gateway: <span className="text-cyan-500">Go</span>
+        </div>
+      </header>
+
+      {/* Main Content: Chia 3 cột */}
+      <div className="flex-1 flex overflow-hidden">
+        
+        {/* Cột 1: Chart (Chiếm phần lớn) */}
+        <div className="flex-1 flex flex-col border-r border-gray-800">
+          <div className="flex-1 relative">
+            {/* Chart Component - Set absolute positioning */}
+            <div className="absolute inset-0 p-2">
+              <Chart />
+            </div>
+          </div>
+          
+          {/* Khu vực Lịch sử lệnh (Bottom) */}
+          <div className="h-64 border-t border-gray-800 bg-[#1e2026]">
+            <OpenOrders />
+          </div>
         </div>
 
-        {/* OrderBook bên phải */}
-        <OrderBook />
+        {/* Cột 2: OrderBook */}
+        <div className="w-[280px] border-r border-gray-800 bg-[#1e2026] flex flex-col">
+          <OrderBook />
+        </div>
+
+        {/* Cột 3: Order Form (Đặt lệnh) */}
+        <div className="w-[320px] bg-[#1e2026] p-2">
+          <OrderForm />
+        </div>
+
       </div>
     </main>
   );
