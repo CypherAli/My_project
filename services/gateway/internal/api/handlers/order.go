@@ -27,10 +27,11 @@ func NewOrderHandler(nc *nats.Conn, store db.Store) *OrderHandler {
 
 type createOrderRequest struct {
 	Symbol   string  `json:"symbol" binding:"required"`
-	Price    float64 `json:"price" binding:"required,gt=0"`
+	Price    float64 `json:"price"`
 	Amount   float64 `json:"amount" binding:"required,gt=0"`
 	Quantity float64 `json:"quantity"` // Alias for amount
 	Side     string  `json:"side" binding:"required"`
+	Type     string  `json:"type"` // "Limit" hoặc "Market"
 }
 
 func (h *OrderHandler) PlaceOrder(ctx *gin.Context) {
@@ -55,6 +56,18 @@ func (h *OrderHandler) PlaceOrder(ctx *gin.Context) {
 		side = "Ask"
 	}
 
+	// Chuẩn hóa type: Mặc định là Limit nếu không có
+	orderType := req.Type
+	if orderType == "" {
+		orderType = "Limit"
+	}
+
+	// Validate: Market Order không cần price, Limit Order bắt buộc có price
+	if orderType == "Limit" && req.Price <= 0 {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Limit order requires price > 0"})
+		return
+	}
+
 	// 1. Lấy UserID từ Token (tạm thời chưa dùng, sẽ dùng sau)
 	_ = ctx.MustGet("authorization_payload").(*util.Payload)
 	// Tạm thời giả định UserID = 1 (sau này query DB để lấy ID thật)
@@ -73,6 +86,7 @@ func (h *OrderHandler) PlaceOrder(ctx *gin.Context) {
 			Price:     fmt.Sprintf("%.8f", req.Price),
 			Amount:    fmt.Sprintf("%.8f", amount),
 			Side:      side,
+			Type:      orderType, // Thêm trường mới
 			Timestamp: time.Now().Unix(),
 		},
 	}

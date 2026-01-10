@@ -40,6 +40,9 @@ type Querier interface {
 	UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) (Orders, error)
 	ListPendingOrders(ctx context.Context, userID int64) ([]Orders, error)
 
+	// Balance methods
+	GetLockedAmountByUserAndCurrency(ctx context.Context, arg GetLockedAmountParams) (string, error)
+
 	// Trade methods
 	CreateTrade(ctx context.Context, arg CreateTradeParams) (Trades, error)
 }
@@ -370,6 +373,35 @@ func (q *Queries) ListPendingOrders(ctx context.Context, userID int64) ([]Orders
 		orders = append(orders, order)
 	}
 	return orders, rows.Err()
+}
+
+// --- Balance Queries Implementation ---
+
+// GetLockedAmountByUserAndCurrency calculates the total locked amount from pending orders
+func (q *Queries) GetLockedAmountByUserAndCurrency(ctx context.Context, arg GetLockedAmountParams) (string, error) {
+	// For BTC (base currency in BTC/USDT), we need to sum pending sell orders
+	// For USDT (quote currency), we need to sum (price * amount) for pending buy orders
+	var query string
+	
+	if arg.Currency == "BTC" {
+		// Locked BTC = sum of amounts in pending Sell (Ask) orders
+		query = `SELECT COALESCE(SUM(CAST(amount AS DECIMAL)), 0)::TEXT 
+				 FROM engine_orders 
+				 WHERE user_id = $1 AND symbol = $2 AND side = 'Ask' AND status = 'pending'`
+	} else {
+		// Locked USDT = sum of (price * amount) in pending Buy (Bid) orders
+		query = `SELECT COALESCE(SUM(CAST(price AS DECIMAL) * CAST(amount AS DECIMAL)), 0)::TEXT 
+				 FROM engine_orders 
+				 WHERE user_id = $1 AND symbol = $2 AND side = 'Bid' AND status = 'pending'`
+	}
+	
+	row := q.db.QueryRow(ctx, query, arg.UserID, arg.Symbol)
+	var lockedAmount string
+	err := row.Scan(&lockedAmount)
+	if err != nil {
+		return "0", err
+	}
+	return lockedAmount, nil
 }
 
 // --- Trade Queries Implementation ---

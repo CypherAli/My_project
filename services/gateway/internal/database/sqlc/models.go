@@ -115,6 +115,13 @@ type CreateTradeParams struct {
 	Amount       string
 }
 
+// GetLockedAmountParams contains parameters for getting locked amount
+type GetLockedAmountParams struct {
+	UserID   int64
+	Currency string
+	Symbol   string
+}
+
 // DepositTxParams contains input parameters for deposit transaction
 type DepositTxParams struct {
 	UserID   int64  `json:"user_id"`

@@ -1,9 +1,14 @@
+"use client";
+import { useState } from "react";
 import OrderBook from "@/components/OrderBook";
 import Chart from "@/components/Chart";
 import OrderForm from "@/components/OrderForm";
 import OpenOrders from "@/components/OpenOrders";
+import Assets from "@/components/Assets";
 
 export default function Home() {
+  const [activeTab, setActiveTab] = useState<"orders" | "funds">("orders");
+
   return (
     <main className="min-h-screen bg-[#0b0e11] text-gray-300 flex flex-col">
       {/* Header */}
@@ -30,9 +35,36 @@ export default function Home() {
             </div>
           </div>
           
-          {/* Khu vực Lịch sử lệnh (Bottom) */}
-          <div className="h-64 border-t border-gray-800 bg-[#1e2026]">
-            <OpenOrders />
+          {/* Khu vực Bottom với Tabs */}
+          <div className="h-64 border-t border-gray-800 bg-[#1e2026] flex flex-col">
+            {/* Tab Header */}
+            <div className="flex border-b border-gray-800">
+              <button
+                onClick={() => setActiveTab("orders")}
+                className={`px-4 py-2 text-sm font-bold transition-colors ${
+                  activeTab === "orders"
+                    ? "text-yellow-500 border-b-2 border-yellow-500"
+                    : "text-gray-500 hover:text-white"
+                }`}
+              >
+                Open Orders
+              </button>
+              <button
+                onClick={() => setActiveTab("funds")}
+                className={`px-4 py-2 text-sm font-bold transition-colors ${
+                  activeTab === "funds"
+                    ? "text-yellow-500 border-b-2 border-yellow-500"
+                    : "text-gray-500 hover:text-white"
+                }`}
+              >
+                Funds
+              </button>
+            </div>
+
+            {/* Tab Content */}
+            <div className="flex-1 overflow-hidden relative">
+              {activeTab === "orders" ? <OpenOrders /> : <Assets />}
+            </div>
           </div>
         </div>
 

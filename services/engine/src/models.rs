@@ -8,6 +8,20 @@ pub enum Side {
     Ask, // Bán
 }
 
+// Thêm enum OrderType để phân biệt Limit và Market Order
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum OrderType {
+    Limit,
+    Market,
+}
+
+// Implement Default để dễ xử lý khi parse từ JSON cũ (không có trường này)
+impl Default for OrderType {
+    fn default() -> Self {
+        OrderType::Limit
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Order {
     pub id: u64,           // ID duy nhất của lệnh
@@ -16,6 +30,8 @@ pub struct Order {
     pub price: Decimal,    // Giá đặt (Dùng Decimal cho chính xác)
     pub amount: Decimal,   // Số lượng đặt
     pub side: Side,        // Mua hay Bán?
+    #[serde(default)]      // Nếu JSON không có trường này -> dùng default (Limit)
+    pub order_type: OrderType, // Limit hoặc Market
     pub timestamp: u64,    // Thời gian đặt (để ưu tiên lệnh đến trước)
 }
 
@@ -29,6 +45,7 @@ impl Order {
             price,
             amount,
             side,
+            order_type: OrderType::Limit, // Mặc định là Limit
             timestamp: 0, // Tạm thời để 0
         }
     }

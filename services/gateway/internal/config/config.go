@@ -78,7 +78,7 @@ func Load() (*Config, error) {
 		},
 		Database: DatabaseConfig{
 			URL:             getEnv("DATABASE_URL", ""),
-			DBSource:        getEnv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/trading_db?sslmode=disable"),
+			DBSource:        getEnv("DB_SOURCE", getEnv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/trading_db?sslmode=disable")),
 			MaxOpenConns:    25,
 			MaxIdleConns:    25,
 			ConnMaxLifetime: time.Minute * 5,

@@ -1,5 +1,5 @@
 // src/orderbook.rs
-use crate::models::{Order, Side, Trade};
+use crate::models::{Order, OrderType, Side, Trade};
 use rust_decimal::Decimal;
 use std::collections::{BTreeMap, HashMap, VecDeque};
 
@@ -86,7 +86,7 @@ impl OrderBook {
         false
     }
 
-    // MỚI: Xử lý lệnh với matching logic
+    // MỚI: Xử lý lệnh với matching logic - Hỗ trợ cả Limit và Market Order
     pub fn process_order(&mut self, mut order: Order) -> Vec<Trade> {
         let mut trades = Vec::new();
         let mut trade_counter = 1u64;
@@ -102,9 +102,15 @@ impl OrderBook {
         
         for price in prices_to_check {
             // Kiểm tra điều kiện khớp lệnh
-            let can_match = match order.side {
-                Side::Bid => order.price >= price,  // Mua: giá đặt >= giá bán
-                Side::Ask => order.price <= price,  // Bán: giá đặt <= giá mua
+            // QUAN TRỌNG: Market Order bỏ qua check giá, Limit Order phải check giá
+            let can_match = match order.order_type {
+                OrderType::Market => true, // Market Order: Khớp bất chấp giá
+                OrderType::Limit => {
+                    match order.side {
+                        Side::Bid => order.price >= price,  // Mua: giá đặt >= giá bán
+                        Side::Ask => order.price <= price,  // Bán: giá đặt <= giá mua
+                    }
+                }
             };
 
             if !can_match {
@@ -131,6 +137,11 @@ impl OrderBook {
                         amount: match_amount,
                         timestamp: 0,
                     };
+                    
+                    println!("   ⚡ Trade: {:?} khớp {} @ {}", 
+                        if order.order_type == OrderType::Market { "MARKET" } else { "LIMIT" },
+                        match_amount, price
+                    );
                     
                     trades.push(trade);
                     trade_counter += 1;
@@ -166,9 +177,20 @@ impl OrderBook {
             }
         }
 
-        // Nếu còn số lượng chưa khớp -> thêm vào OrderBook
+        // QUAN TRỌNG: Chỉ thêm vào OrderBook nếu:
+        // 1. Còn số lượng chưa khớp
+        // 2. Là Limit Order (Market Order không được vào Book)
         if order.amount > Decimal::ZERO {
-            self.add_limit_order(order);
+            match order.order_type {
+                OrderType::Limit => {
+                    println!(" -> Lệnh Limit còn dư, thêm vào OrderBook");
+                    self.add_limit_order(order);
+                },
+                OrderType::Market => {
+                    println!(" -> Lệnh Market còn dư {} nhưng không thêm vào Book (Kill)", order.amount);
+                    // Market Order không được thêm vào Book, phần dư bị "Kill"
+                }
+            }
         }
 
         trades
