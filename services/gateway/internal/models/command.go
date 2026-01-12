@@ -13,8 +13,8 @@ type OrderData struct {
 	Symbol    string `json:"symbol"`
 	Price     string `json:"price"` // Dùng string để đảm bảo chính xác Decimal bên Rust
 	Amount    string `json:"amount"`
-	Side      string `json:"side"`      // "Bid" hoặc "Ask"
-	Type      string `json:"order_type"` // "Limit" hoặc "Market" - Thêm mới
+	Side      string `json:"side"` // "Bid" hoặc "Ask"
+	Type      string `json:"type"` // "Limit" hoặc "Market" - Trường mới hỗ trợ loại lệnh
 	Timestamp int64  `json:"timestamp"`
 }
 

@@ -1,4 +1,12 @@
 -- Initialize trading database schema
+-- User 'trading_user' is automatically created by POSTGRES_USER environment variable
+
+-- Set password encryption to md5 for this session
+SET password_encryption = 'md5';
+-- Set password explicitly with MD5
+ALTER USER trading_user WITH PASSWORD 'trading_password';
+-- Grant all necessary privileges
+ALTER USER trading_user WITH LOGIN SUPERUSER CREATEDB CREATEROLE REPLICATION BYPASSRLS;
 
 -- Enable required extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

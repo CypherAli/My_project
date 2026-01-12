@@ -31,7 +31,7 @@ type createOrderRequest struct {
 	Amount   float64 `json:"amount" binding:"required,gt=0"`
 	Quantity float64 `json:"quantity"` // Alias for amount
 	Side     string  `json:"side" binding:"required"`
-	Type     string  `json:"type"` // "Limit" hoặc "Market"
+	Type     string  `json:"type" binding:"required,oneof=Limit Market"` // "Limit" hoặc "Market" - Bắt buộc
 }
 
 func (h *OrderHandler) PlaceOrder(ctx *gin.Context) {
