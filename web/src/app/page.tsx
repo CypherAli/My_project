@@ -5,9 +5,10 @@ import Chart from "@/components/Chart";
 import OrderForm from "@/components/OrderForm";
 import OpenOrders from "@/components/OpenOrders";
 import Assets from "@/components/Assets";
+import TradeHistory from "@/components/TradeHistory";
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<"orders" | "funds">("orders");
+  const [activeTab, setActiveTab] = useState<"orders" | "funds" | "trades">("orders");
 
   return (
     <main className="min-h-screen bg-[#0b0e11] text-gray-300 flex flex-col">
@@ -59,11 +60,23 @@ export default function Home() {
               >
                 Funds
               </button>
+              <button
+                onClick={() => setActiveTab("trades")}
+                className={`px-4 py-2 text-sm font-bold transition-colors ${
+                  activeTab === "trades"
+                    ? "text-yellow-500 border-b-2 border-yellow-500"
+                    : "text-gray-500 hover:text-white"
+                }`}
+              >
+                History
+              </button>
             </div>
 
             {/* Tab Content */}
             <div className="flex-1 overflow-hidden relative">
-              {activeTab === "orders" ? <OpenOrders /> : <Assets />}
+              {activeTab === "orders" && <OpenOrders />}
+              {activeTab === "funds" && <Assets />}
+              {activeTab === "trades" && <TradeHistory />}
             </div>
           </div>
         </div>

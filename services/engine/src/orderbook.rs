@@ -98,7 +98,13 @@ impl OrderBook {
         };
 
         // Duyệt qua các mức giá tốt nhất (BTreeMap tự sắp xếp)
-        let prices_to_check: Vec<Decimal> = opposite_side.keys().copied().collect();
+        // QUAN TRỌNG: 
+        // - Nếu Buy (Bid): lấy Ask thấp nhất trước (sellers giá rẻ nhất) -> keys() thường
+        // - Nếu Sell (Ask): lấy Bid cao nhất trước (buyers giá cao nhất) -> keys().rev()
+        let prices_to_check: Vec<Decimal> = match order.side {
+            Side::Bid => opposite_side.keys().copied().collect(),      // Ask: thấp -> cao
+            Side::Ask => opposite_side.keys().rev().copied().collect(), // Bid: cao -> thấp
+        };
         
         for price in prices_to_check {
             // Kiểm tra điều kiện khớp lệnh

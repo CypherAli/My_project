@@ -31,13 +31,14 @@ pub struct Order {
     pub amount: Decimal,   // Số lượng đặt
     pub side: Side,        // Mua hay Bán?
     #[serde(default)]      // Nếu JSON không có trường này -> dùng default (Limit)
+    #[serde(rename = "type")] // Map với trường JSON "type" từ Go (vì "type" là keyword trong Rust)
     pub order_type: OrderType, // Limit hoặc Market
     pub timestamp: u64,    // Thời gian đặt (để ưu tiên lệnh đến trước)
 }
 
 impl Order {
     // Helper để tạo lệnh nhanh khi test
-    pub fn new(id: u64, user_id: u64, price: Decimal, amount: Decimal, side: Side) -> Self {
+    pub fn new(id: u64, user_id: u64, price: Decimal, amount: Decimal, side: Side, order_type: OrderType) -> Self {
         Order {
             id,
             user_id,
@@ -45,7 +46,7 @@ impl Order {
             price,
             amount,
             side,
-            order_type: OrderType::Limit, // Mặc định là Limit
+            order_type,
             timestamp: 0, // Tạm thời để 0
         }
     }

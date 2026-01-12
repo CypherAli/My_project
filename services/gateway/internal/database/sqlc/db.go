@@ -45,6 +45,7 @@ type Querier interface {
 
 	// Trade methods
 	CreateTrade(ctx context.Context, arg CreateTradeParams) (Trades, error)
+	ListUserTrades(ctx context.Context, userID int64) ([]ListUserTradesRow, error)
 }
 
 // Queries provides methods to interact with the database
@@ -423,4 +424,61 @@ func (q *Queries) CreateTrade(ctx context.Context, arg CreateTradeParams) (Trade
 		&trade.CreatedAt,
 	)
 	return trade, err
+}
+
+// ListUserTradesRow represents a trade from the user's perspective
+type ListUserTradesRow struct {
+	ID        int64     `json:"id"`
+	Symbol    string    `json:"symbol"`
+	Side      string    `json:"side"`
+	Price     string    `json:"price"`
+	Amount    string    `json:"amount"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// ListUserTrades returns all trades where the user was either maker or taker
+func (q *Queries) ListUserTrades(ctx context.Context, userID int64) ([]ListUserTradesRow, error) {
+	// Query thông minh: Lấy trades mà user là Maker hoặc Taker
+	// Và xác định Side của user trong trade đó (Bid hay Ask)
+	query := `
+		SELECT 
+			t.id,
+			m.symbol,
+			CASE 
+				WHEN m.user_id = $1 THEN m.side 
+				ELSE k.side 
+			END AS side,
+			t.price,
+			t.amount,
+			t.created_at
+		FROM engine_trades t
+		JOIN engine_orders m ON t.maker_order_id = m.id
+		JOIN engine_orders k ON t.taker_order_id = k.id
+		WHERE m.user_id = $1 OR k.user_id = $1
+		ORDER BY t.created_at DESC
+		LIMIT 50
+	`
+
+	rows, err := q.db.Query(ctx, query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var trades []ListUserTradesRow
+	for rows.Next() {
+		var trade ListUserTradesRow
+		if err := rows.Scan(
+			&trade.ID,
+			&trade.Symbol,
+			&trade.Side,
+			&trade.Price,
+			&trade.Amount,
+			&trade.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		trades = append(trades, trade)
+	}
+	return trades, rows.Err()
 }
