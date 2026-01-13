@@ -6,12 +6,12 @@ import (
 
 // Users represents a user in the system
 type Users struct {
-	ID        int64     `json:"id"`
-	Username  string    `json:"username"`
-	Email     string    `json:"email"`
-	Password  string    `json:"password"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID           int64     `json:"id"`
+	Username     string    `json:"username"`
+	Email        string    `json:"email"`
+	PasswordHash string    `json:"password_hash"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }
 
 // Accounts represents a user's account (wallet)
@@ -63,7 +63,7 @@ type Trades struct {
 type CreateUserParams struct {
 	Username string
 	Email    string
-	Password string
+	PasswordHash string
 }
 
 // GetAccountByUserAndTypeParams contains the parameters for getting an account by user and currency

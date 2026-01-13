@@ -49,8 +49,8 @@ func NewServer(cfg config.Config, store db.Store, nc *nats.Conn, wsHub *websocke
 	userHandler := handlers.NewUserHandler(cfg, store)
 	accountHandler := handlers.NewAccountHandler(store)
 	orderHandler := handlers.NewOrderHandler(nc, store) // NATS Order Handler với store
-	balanceHandler := handlers.NewBalanceHandler(store)  // Balance Handler
-	tradeHandler := handlers.NewTradeHandler(store)      // Trade Handler
+	balanceHandler := handlers.NewBalanceHandler(store) // Balance Handler
+	tradeHandler := handlers.NewTradeHandler(store)     // Trade Handler
 
 	// --- NHÓM PUBLIC ROUTES (Ai cũng gọi được) ---
 	router.POST("/api/v1/auth/register", userHandler.RegisterUser)

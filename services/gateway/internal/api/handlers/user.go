@@ -65,7 +65,7 @@ func (h *UserHandler) RegisterUser(ctx *gin.Context) {
 	user, err := h.store.CreateUser(ctx, db.CreateUserParams{
 		Username: req.Username,
 		Email:    req.Email,
-		Password: string(hashedPassword),
+		PasswordHash: string(hashedPassword),
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create user: " + err.Error()})
@@ -105,7 +105,7 @@ func (h *UserHandler) LoginUser(ctx *gin.Context) {
 	}
 
 	// Verify password
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password))
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "invalid username or password"})
 		return

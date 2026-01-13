@@ -61,7 +61,7 @@ func New(db DBTX) *Queries {
 // --- User Queries Implementation ---
 
 func (q *Queries) GetUserByUsername(ctx context.Context, username string) (Users, error) {
-	query := `SELECT id, username, email, password, created_at, updated_at 
+	query := `SELECT id, username, email, password_hash, created_at, updated_at 
               FROM users WHERE username = $1`
 
 	row := q.db.QueryRow(ctx, query, username)
@@ -70,7 +70,7 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (Users
 		&user.ID,
 		&user.Username,
 		&user.Email,
-		&user.Password,
+		&user.PasswordHash,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
@@ -84,7 +84,7 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (Users
 }
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (Users, error) {
-	query := `SELECT id, username, email, password, created_at, updated_at 
+	query := `SELECT id, username, email, password_hash, created_at, updated_at 
               FROM users WHERE email = $1`
 
 	row := q.db.QueryRow(ctx, query, email)
@@ -93,7 +93,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (Users, erro
 		&user.ID,
 		&user.Username,
 		&user.Email,
-		&user.Password,
+		&user.PasswordHash,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
@@ -107,7 +107,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (Users, erro
 }
 
 func (q *Queries) GetUserByID(ctx context.Context, id int64) (Users, error) {
-	query := `SELECT id, username, email, password, created_at, updated_at 
+	query := `SELECT id, username, email, password_hash, created_at, updated_at 
               FROM users WHERE id = $1`
 
 	row := q.db.QueryRow(ctx, query, id)
@@ -116,7 +116,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (Users, error) {
 		&user.ID,
 		&user.Username,
 		&user.Email,
-		&user.Password,
+		&user.PasswordHash,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
@@ -130,18 +130,18 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (Users, error) {
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (Users, error) {
-	query := `INSERT INTO users (username, email, password, created_at, updated_at) 
+	query := `INSERT INTO users (username, email, password_hash, created_at, updated_at) 
               VALUES ($1, $2, $3, $4, $5) 
-              RETURNING id, username, email, password, created_at, updated_at`
+              RETURNING id, username, email, password_hash, created_at, updated_at`
 
 	now := time.Now()
-	row := q.db.QueryRow(ctx, query, arg.Username, arg.Email, arg.Password, now, now)
+	row := q.db.QueryRow(ctx, query, arg.Username, arg.Email, arg.PasswordHash, now, now)
 	var user Users
 	err := row.Scan(
 		&user.ID,
 		&user.Username,
 		&user.Email,
-		&user.Password,
+		&user.PasswordHash,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
@@ -383,7 +383,7 @@ func (q *Queries) GetLockedAmountByUserAndCurrency(ctx context.Context, arg GetL
 	// For BTC (base currency in BTC/USDT), we need to sum pending sell orders
 	// For USDT (quote currency), we need to sum (price * amount) for pending buy orders
 	var query string
-	
+
 	if arg.Currency == "BTC" {
 		// Locked BTC = sum of amounts in pending Sell (Ask) orders
 		query = `SELECT COALESCE(SUM(CAST(amount AS DECIMAL)), 0)::TEXT 
@@ -395,7 +395,7 @@ func (q *Queries) GetLockedAmountByUserAndCurrency(ctx context.Context, arg GetL
 				 FROM engine_orders 
 				 WHERE user_id = $1 AND symbol = $2 AND side = 'Bid' AND status = 'pending'`
 	}
-	
+
 	row := q.db.QueryRow(ctx, query, arg.UserID, arg.Symbol)
 	var lockedAmount string
 	err := row.Scan(&lockedAmount)
