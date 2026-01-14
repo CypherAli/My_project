@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -18,7 +18,7 @@ export default function LoginPage() {
       const res = await fetch("http://localhost:8080/api/v1/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ username, password }),
       });
 
       if (!res.ok) {
@@ -52,13 +52,13 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Email</label>
+            <label className="block text-sm text-gray-400 mb-1">Username</label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               className="w-full bg-[#2b3139] border border-gray-700 rounded p-2 text-white focus:border-yellow-500 outline-none"
-              placeholder="user@example.com"
+              placeholder="testuser"
               required
             />
           </div>
@@ -85,7 +85,7 @@ export default function LoginPage() {
         <div className="mt-6 text-center text-xs text-gray-500">
           <p>Demo credentials:</p>
           <p className="mt-1 font-mono bg-gray-900 p-2 rounded">
-            testuser@example.com / password123
+            Run quick-seed.ps1 to create a user
           </p>
         </div>
       </div>

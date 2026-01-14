@@ -26,12 +26,13 @@ func NewOrderHandler(nc *nats.Conn, store db.Store) *OrderHandler {
 }
 
 type createOrderRequest struct {
-	Symbol   string  `json:"symbol" binding:"required"`
-	Price    float64 `json:"price"`
-	Amount   float64 `json:"amount" binding:"required,gt=0"`
-	Quantity float64 `json:"quantity"` // Alias for amount
-	Side     string  `json:"side" binding:"required"`
-	Type     string  `json:"type" binding:"required,oneof=Limit Market"` // "Limit" hoặc "Market" - Bắt buộc
+	Symbol       string  `json:"symbol" binding:"required"`
+	Price        float64 `json:"price"`
+	Amount       float64 `json:"amount" binding:"required,gt=0"`
+	Quantity     float64 `json:"quantity"` // Alias for amount
+	Side         string  `json:"side" binding:"required"`
+	Type         string  `json:"type" binding:"required,oneof=Limit Market StopLimit"` // Thêm StopLimit
+	TriggerPrice float64 `json:"trigger_price"` // Bắt buộc cho StopLimit
 }
 
 func (h *OrderHandler) PlaceOrder(ctx *gin.Context) {
@@ -68,6 +69,23 @@ func (h *OrderHandler) PlaceOrder(ctx *gin.Context) {
 		return
 	}
 
+	// Validate: StopLimit Order bắt buộc có cả trigger_price và limit price
+	if orderType == "StopLimit" {
+		if req.TriggerPrice <= 0 {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "StopLimit order requires trigger_price > 0"})
+			return
+		}
+		if req.Price <= 0 {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "StopLimit order requires price > 0"})
+			return
+		}
+		
+		// Logic validation: Stop-Loss Sell (giảm giá) vs Stop-Buy (tăng giá)
+		// Stop-Loss Sell: trigger_price < current_price, limit_price <= trigger_price
+		// Stop-Buy: trigger_price > current_price, limit_price >= trigger_price
+		// (Tạm thời skip validation này, engine sẽ xử lý)
+	}
+
 	// 1. Lấy UserID từ Token (tạm thời chưa dùng, sẽ dùng sau)
 	_ = ctx.MustGet("authorization_payload").(*util.Payload)
 	// Tạm thời giả định UserID = 1 (sau này query DB để lấy ID thật)
@@ -76,29 +94,36 @@ func (h *OrderHandler) PlaceOrder(ctx *gin.Context) {
 	// 2. Tạo Order ID (Tạm thời dùng timestamp, sau này dùng Snowflake ID hoặc Sequence DB)
 	orderID := uint64(time.Now().UnixNano())
 
-	// 3. Tạo Command chuẩn format Rust (chuyển số về string)
+	// 3. Chuẩn bị trigger_price (chỉ có với StopLimit)
+	triggerPrice := ""
+	if orderType == "StopLimit" {
+		triggerPrice = fmt.Sprintf("%.8f", req.TriggerPrice)
+	}
+
+	// 4. Tạo Command chuẩn format Rust (chuyển số về string)
 	cmd := models.Command{
 		Type: "Place",
 		Data: models.OrderData{
-			ID:        orderID,
-			UserID:    userID,
-			Symbol:    req.Symbol,
-			Price:     fmt.Sprintf("%.8f", req.Price),
-			Amount:    fmt.Sprintf("%.8f", amount),
-			Side:      side,
-			Type:      orderType, // Thêm trường mới
-			Timestamp: time.Now().Unix(),
+			ID:           orderID,
+			UserID:       userID,
+			Symbol:       req.Symbol,
+			Price:        fmt.Sprintf("%.8f", req.Price),
+			Amount:       fmt.Sprintf("%.8f", amount),
+			Side:         side,
+			Type:         orderType,
+			TriggerPrice: triggerPrice, // Thêm trigger_price
+			Timestamp:    time.Now().Unix(),
 		},
 	}
 
-	// 4. Serialize sang JSON
+	// 5. Serialize sang JSON
 	data, err := json.Marshal(cmd)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to marshal command"})
 		return
 	}
 
-	// 5. Bắn vào NATS topic "orders"
+	// 6. Bắn vào NATS topic "orders"
 	err = h.natsConn.Publish("orders", data)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to publish to NATS"})
@@ -128,7 +153,7 @@ func (h *OrderHandler) ListOpenOrders(ctx *gin.Context) {
 		return
 	}
 
-	orders, err := h.store.ListPendingOrders(ctx, user.ID)
+	orders, err := h.store.ListPendingOrders(ctx, util.HashStringToInt64(user.ID))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

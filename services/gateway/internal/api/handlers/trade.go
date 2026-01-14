@@ -31,7 +31,7 @@ func (h *TradeHandler) ListUserTrades(ctx *gin.Context) {
 	}
 
 	// Lấy danh sách trades (user có thể là Maker hoặc Taker)
-	trades, err := h.store.ListUserTrades(ctx, user.ID)
+	trades, err := h.store.ListUserTrades(ctx, util.HashStringToInt64(user.ID))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
