@@ -63,8 +63,8 @@ type Trades struct {
 
 // CreateUserParams contains the parameters for creating a user
 type CreateUserParams struct {
-	Username string
-	Email    string
+	Username     string
+	Email        string
 	PasswordHash string
 }
 

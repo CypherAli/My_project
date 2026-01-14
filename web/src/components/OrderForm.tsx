@@ -11,9 +11,10 @@ interface Balance {
 export default function OrderForm() {
   const { token } = useAuth();
   const [side, setSide] = useState<"Bid" | "Ask">("Bid");
-  const [orderType, setOrderType] = useState<"Limit" | "Market">("Limit");
+  const [orderType, setOrderType] = useState<"Limit" | "Market" | "StopLimit">("Limit");
   const [price, setPrice] = useState("");
   const [amount, setAmount] = useState("");
+  const [triggerPrice, setTriggerPrice] = useState(""); // MỚI: Giá kích hoạt cho Stop-Limit
   const [loading, setLoading] = useState(false);
   const [balance, setBalance] = useState<{ usdt: string; btc: string }>({
     usdt: "0",
@@ -57,6 +58,12 @@ export default function OrderForm() {
       return;
     }
     
+    // Validate Trigger Price cho Stop-Limit
+    if (orderType === "StopLimit" && (!triggerPrice || parseFloat(triggerPrice) <= 0)) {
+      alert("⚠️ Please enter a valid Trigger Price!");
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -71,7 +78,8 @@ export default function OrderForm() {
           side: side,
           type: orderType,
           price: orderType === "Market" ? "0" : price,
-          amount: amount
+          amount: amount,
+          trigger_price: orderType === "StopLimit" ? triggerPrice : "0" // MỚI: Gửi trigger_price
         })
       });
       
@@ -110,49 +118,90 @@ export default function OrderForm() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Toggle Loại lệnh - Limit/Market */}
+        {/* Toggle Loại lệnh - Limit/Market/StopLimit */}
         <div className="flex gap-4 text-sm font-bold text-gray-400 mb-2 border-b border-gray-800 pb-2">
           <button 
             type="button"
             onClick={() => setOrderType("Limit")}
             className={`transition-colors ${orderType === "Limit" ? "text-yellow-500" : "hover:text-gray-300"}`}
           >
-            📊 Limit Order
+            📊 Limit
           </button>
           <button 
             type="button"
             onClick={() => setOrderType("Market")}
             className={`transition-colors ${orderType === "Market" ? "text-yellow-500" : "hover:text-gray-300"}`}
           >
-            ⚡ Market Order
+            ⚡ Market
+          </button>
+          <button 
+            type="button"
+            onClick={() => setOrderType("StopLimit")}
+            className={`transition-colors ${orderType === "StopLimit" ? "text-yellow-500" : "hover:text-gray-300"}`}
+          >
+            🛡️ Stop-Limit
           </button>
         </div>
+
+        {/* Input Trigger Price (chỉ hiện khi chọn Stop-Limit) */}
+        {orderType === "StopLimit" && (
+          <div>
+            <label className="text-xs text-gray-500 mb-1 block">
+              🎯 Trigger Price (USDT)
+            </label>
+            <div className="flex bg-gray-900 border border-yellow-700/50 rounded overflow-hidden">
+              <input 
+                type="number"
+                value={triggerPrice}
+                onChange={(e) => setTriggerPrice(e.target.value)}
+                className="bg-transparent p-2 text-white w-full outline-none text-right font-mono"
+                placeholder="0.00"
+                step="0.01"
+                required
+              />
+              <span className="p-2 text-gray-500 text-sm flex items-center">USDT</span>
+            </div>
+            <p className="text-[10px] text-yellow-500 mt-1">
+              💡 {side === "Bid" 
+                ? "Buy order activates when market price reaches or exceeds this level" 
+                : "Sell order activates when market price reaches or falls below this level (Stop-Loss)"}
+            </p>
+          </div>
+        )}
 
         {/* Input Giá */}
         <div>
           <label className="text-xs text-gray-500 mb-1 flex justify-between">
-            <span>Price (USDT)</span>
+            <span>
+              {orderType === "StopLimit" ? "Limit Price (USDT)" : "Price (USDT)"}
+              {orderType === "StopLimit" && <span className="text-yellow-500 ml-1">*</span>}
+            </span>
             {token && (
               <span className="text-gray-400">
                 Avail: <span className="text-white font-mono">{parseFloat(balance.usdt).toFixed(2)}</span>
               </span>
             )}
           </label>
-          <div className={`flex bg-gray-900 border border-gray-700 rounded overflow-hidden ${orderType === "Market" ? "opacity-50 cursor-not-allowed" : ""}`}>
+          <div className={`flex bg-gray-900 border ${orderType === "StopLimit" ? "border-yellow-700/50" : "border-gray-700"} rounded overflow-hidden ${orderType === "Market" ? "opacity-50 cursor-not-allowed" : ""}`}>
             <input 
               type={orderType === "Market" ? "text" : "number"}
               value={orderType === "Market" ? "Market Price" : price}
-              onChange={(e) => orderType === "Limit" && setPrice(e.target.value)}
+              onChange={(e) => orderType !== "Market" && setPrice(e.target.value)}
               disabled={orderType === "Market"}
               className="bg-transparent p-2 text-white w-full outline-none text-right font-mono disabled:cursor-not-allowed"
               placeholder="0.00"
               step="0.01"
-              required={orderType === "Limit"}
+              required={orderType !== "Market"}
             />
             <span className="p-2 text-gray-500 text-sm flex items-center">USDT</span>
           </div>
           {orderType === "Market" && (
             <p className="text-xs text-yellow-500 mt-1">💡 Will execute at best available price</p>
+          )}
+          {orderType === "StopLimit" && (
+            <p className="text-[10px] text-gray-500 mt-1">
+              * Order will be placed at this price when trigger is hit
+            </p>
           )}
         </div>
 

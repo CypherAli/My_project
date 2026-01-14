@@ -32,7 +32,7 @@ type createOrderRequest struct {
 	Quantity     float64 `json:"quantity"` // Alias for amount
 	Side         string  `json:"side" binding:"required"`
 	Type         string  `json:"type" binding:"required,oneof=Limit Market StopLimit"` // Thêm StopLimit
-	TriggerPrice float64 `json:"trigger_price"` // Bắt buộc cho StopLimit
+	TriggerPrice float64 `json:"trigger_price"`                                        // Bắt buộc cho StopLimit
 }
 
 func (h *OrderHandler) PlaceOrder(ctx *gin.Context) {
@@ -79,7 +79,7 @@ func (h *OrderHandler) PlaceOrder(ctx *gin.Context) {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "StopLimit order requires price > 0"})
 			return
 		}
-		
+
 		// Logic validation: Stop-Loss Sell (giảm giá) vs Stop-Buy (tăng giá)
 		// Stop-Loss Sell: trigger_price < current_price, limit_price <= trigger_price
 		// Stop-Buy: trigger_price > current_price, limit_price >= trigger_price
