@@ -35,7 +35,7 @@ func (h *AccountHandler) ListAccounts(ctx *gin.Context) {
 	}
 
 	// 3. Lấy danh sách accounts của user
-	accounts, err := h.store.GetAccountsByUserID(ctx, int32(user.ID))
+	accounts, err := h.store.GetAccountsByUserID(ctx, util.HashStringToInt32(user.ID))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -107,14 +107,14 @@ func (h *AccountHandler) GetAccountBalance(ctx *gin.Context) {
 
 	// 2. Lấy account theo currency
 	account, err := h.store.GetAccountByUserAndType(ctx, db.GetAccountByUserAndTypeParams{
-		UserID:   int32(user.ID),
+		UserID:   util.HashStringToInt32(user.ID),
 		Currency: currency,
 	})
 	if err != nil {
 		// Nếu chưa có ví, tạo mới với số dư 0
 		if err.Error() == "account not found" {
 			account, err = h.store.CreateAccount(ctx, db.CreateAccountParams{
-				UserID:   int32(user.ID),
+				UserID:   util.HashStringToInt32(user.ID),
 				Currency: currency,
 				Balance:  "0",
 			})

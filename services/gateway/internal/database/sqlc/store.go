@@ -6,6 +6,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/trading-platform/gateway/internal/util"
 )
 
 // Store cung cấp tất cả các chức năng để thực hiện db queries và transactions
@@ -60,7 +61,7 @@ func (store *SQLStore) DepositTx(ctx context.Context, arg DepositTxParams) (Depo
 
 		// 1. Tìm hoặc tạo ví của user
 		account, err := q.GetAccountByUserAndType(ctx, GetAccountByUserAndTypeParams{
-			UserID:   int32(arg.UserID),
+			UserID:   util.HashStringToInt32(arg.UserID),
 			Currency: arg.Currency,
 		})
 
@@ -68,7 +69,7 @@ func (store *SQLStore) DepositTx(ctx context.Context, arg DepositTxParams) (Depo
 		if err != nil {
 			if err.Error() == "account not found" {
 				account, err = q.CreateAccount(ctx, CreateAccountParams{
-					UserID:   int32(arg.UserID),
+					UserID:   util.HashStringToInt32(arg.UserID),
 					Currency: arg.Currency,
 					Balance:  "0",
 				})

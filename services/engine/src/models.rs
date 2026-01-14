@@ -8,11 +8,12 @@ pub enum Side {
     Ask, // Bán
 }
 
-// Thêm enum OrderType để phân biệt Limit và Market Order
+// Thêm enum OrderType để phân biệt Limit, Market và StopLimit Order
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum OrderType {
     Limit,
     Market,
+    StopLimit, // Lệnh điều kiện
 }
 
 // Implement Default để dễ xử lý khi parse từ JSON cũ (không có trường này)
@@ -32,7 +33,9 @@ pub struct Order {
     pub side: Side,        // Mua hay Bán?
     #[serde(default)]      // Nếu JSON không có trường này -> dùng default (Limit)
     #[serde(rename = "type")] // Map với trường JSON "type" từ Go (vì "type" là keyword trong Rust)
-    pub order_type: OrderType, // Limit hoặc Market
+    pub order_type: OrderType, // Limit, Market hoặc StopLimit
+    #[serde(default)]      // Optional: Chỉ có khi order_type == StopLimit
+    pub trigger_price: Option<Decimal>, // Giá kích hoạt cho StopLimit
     pub timestamp: u64,    // Thời gian đặt (để ưu tiên lệnh đến trước)
 }
 
@@ -47,7 +50,23 @@ impl Order {
             amount,
             side,
             order_type,
+            trigger_price: None, // Default không có trigger
             timestamp: 0, // Tạm thời để 0
+        }
+    }
+    
+    // Helper để tạo StopLimit order
+    pub fn new_stop_limit(id: u64, user_id: u64, price: Decimal, amount: Decimal, side: Side, trigger_price: Decimal) -> Self {
+        Order {
+            id,
+            user_id,
+            symbol: "BTC/USDT".to_string(),
+            price,
+            amount,
+            side,
+            order_type: OrderType::StopLimit,
+            trigger_price: Some(trigger_price),
+            timestamp: 0,
         }
     }
 }

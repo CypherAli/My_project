@@ -6,7 +6,7 @@ import (
 
 // Users represents a user in the system
 type Users struct {
-	ID           int64     `json:"id"`
+	ID           string    `json:"id"`
 	Username     string    `json:"username"`
 	Email        string    `json:"email"`
 	PasswordHash string    `json:"password_hash"`
@@ -37,14 +37,16 @@ type Transactions struct {
 
 // Orders represents a trading order
 type Orders struct {
-	ID        int64     `json:"id"`
-	UserID    int64     `json:"user_id"`
-	Symbol    string    `json:"symbol"`
-	Price     string    `json:"price"`
-	Amount    string    `json:"amount"`
-	Side      string    `json:"side"`   // "Bid" or "Ask"
-	Status    string    `json:"status"` // "pending", "open", "filled", "cancelled"
-	CreatedAt time.Time `json:"created_at"`
+	ID           int64     `json:"id"`
+	UserID       int64     `json:"user_id"`
+	Symbol       string    `json:"symbol"`
+	Price        string    `json:"price"`
+	Amount       string    `json:"amount"`
+	Side         string    `json:"side"`          // "Bid" or "Ask"
+	Status       string    `json:"status"`        // "pending", "open", "filled", "cancelled"
+	Type         string    `json:"type"`          // "Limit", "Market", "StopLimit"
+	TriggerPrice *string   `json:"trigger_price"` // Only for StopLimit orders
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 // Trades represents a matched trade
@@ -93,12 +95,14 @@ type CreateDepositParams struct {
 
 // CreateOrderParams contains the parameters for creating an order
 type CreateOrderParams struct {
-	ID     int64
-	UserID int64
-	Symbol string
-	Price  string
-	Amount string
-	Side   string
+	ID           int64
+	UserID       int64
+	Symbol       string
+	Price        string
+	Amount       string
+	Side         string
+	Type         string  // "Limit", "Market", "StopLimit"
+	TriggerPrice *string // Only for StopLimit orders
 }
 
 // UpdateOrderStatusParams contains the parameters for updating order status
@@ -124,7 +128,7 @@ type GetLockedAmountParams struct {
 
 // DepositTxParams contains input parameters for deposit transaction
 type DepositTxParams struct {
-	UserID   int64  `json:"user_id"`
+	UserID   string `json:"user_id"`
 	Amount   string `json:"amount"`
 	Currency string `json:"currency"`
 }

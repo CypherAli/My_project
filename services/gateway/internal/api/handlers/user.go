@@ -79,11 +79,16 @@ func (h *UserHandler) RegisterUser(ctx *gin.Context) {
 		return
 	}
 
-	response := UserResponse{
-		Username:    user.Username,
-		Email:       user.Email,
-		AccessToken: accessToken,
-		CreatedAt:   user.CreatedAt,
+	response := gin.H{
+		"username":     user.Username,
+		"email":        user.Email,
+		"access_token": accessToken,
+		"created_at":   user.CreatedAt,
+		"user": gin.H{
+			"id":       user.ID,
+			"username": user.Username,
+			"email":    user.Email,
+		},
 	}
 
 	ctx.JSON(http.StatusOK, response)
@@ -122,6 +127,7 @@ func (h *UserHandler) LoginUser(ctx *gin.Context) {
 		"username":     user.Username,
 		"email":        user.Email,
 		"access_token": accessToken,
+		"token":        accessToken,
 	}
 
 	ctx.JSON(http.StatusOK, response)
