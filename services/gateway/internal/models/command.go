@@ -11,10 +11,10 @@ type OrderData struct {
 	ID           uint64 `json:"id"`
 	UserID       uint64 `json:"user_id"`
 	Symbol       string `json:"symbol"`
-	Price        string `json:"price"`  // Dùng string để đảm bảo chính xác Decimal bên Rust
+	Price        string `json:"price"` // Dùng string để đảm bảo chính xác Decimal bên Rust
 	Amount       string `json:"amount"`
-	Side         string `json:"side"`          // "Bid" hoặc "Ask"
-	Type         string `json:"type"`          // "Limit", "Market", hoặc "StopLimit"
+	Side         string `json:"side"`                    // "Bid" hoặc "Ask"
+	Type         string `json:"type"`                    // "Limit", "Market", hoặc "StopLimit"
 	TriggerPrice string `json:"trigger_price,omitempty"` // Chỉ cho StopLimit orders
 	Timestamp    int64  `json:"timestamp"`
 }
