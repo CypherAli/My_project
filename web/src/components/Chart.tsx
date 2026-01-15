@@ -141,7 +141,7 @@ export default function Chart() {
       ws = new WebSocket("ws://localhost:8080/ws");
 
       ws.onopen = () => {
-        console.log('✅ WebSocket connected - receiving live trades');
+        console.log('WebSocket connected - receiving live trades');
       };
 
       ws.onmessage = (event) => {

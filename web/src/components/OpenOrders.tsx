@@ -30,24 +30,24 @@ export default function OpenOrders() {
         headers: { Authorization: `Bearer ${token}` },
       });
       
-      console.log("📊 Orders API Response Status:", res.status);
+      console.log("Orders API Response Status:", res.status);
       
       if (res.ok) {
         const data = await res.json();
-        console.log("📊 Orders Data:", data);
+        console.log("Orders Data:", data);
         // API có thể trả về null hoặc undefined nếu không có lệnh nào
         // Đảm bảo luôn set một array
         const ordersArray = Array.isArray(data) ? data : [];
         setOrders(ordersArray);
         setError(null);
-        console.log(`✅ Set ${ordersArray.length} orders`);
+        console.log(`Set ${ordersArray.length} orders`);
       } else {
         const errorText = await res.text();
-        console.error("❌ Failed to fetch orders:", res.status, errorText);
+        console.error("Failed to fetch orders:", res.status, errorText);
         setError(`API Error: ${res.status}`);
       }
     } catch (err) {
-      console.error("❌ Error fetching orders:", err);
+      console.error("Error fetching orders:", err);
       setError(`Network Error: ${err}`);
     } finally {
       setLoading(false);
@@ -82,15 +82,15 @@ export default function OpenOrders() {
       });
 
       if (res.ok) {
-        alert("✅ Cancel request sent! Order will be removed shortly.");
+        alert("Cancel request sent! Order will be removed shortly.");
         fetchOrders(); // Reload lại bảng
       } else {
         const error = await res.json();
-        alert("❌ Failed to cancel: " + (error.error || "Unknown error"));
+        alert("Failed to cancel: " + (error.error || "Unknown error"));
       }
     } catch (err) {
       console.error("Cancel error:", err);
-      alert("❌ Failed to cancel order");
+      alert("Failed to cancel order");
     }
   };
 
@@ -182,7 +182,7 @@ export default function OpenOrders() {
             {orders.length === 0 && (
               <tr>
                 <td colSpan={7} className="text-center py-8 text-gray-600">
-                  No open orders. Place your first order! 🚀
+                  No open orders. Place your first order!
                 </td>
               </tr>
             )}
