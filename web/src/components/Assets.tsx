@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 
 interface Asset {
@@ -13,7 +13,7 @@ export default function Assets() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchBalance = async () => {
+  const fetchBalance = useCallback(async () => {
     if (!token) return;
     try {
       const res = await fetch("http://localhost:8080/api/v1/balance", {
@@ -28,14 +28,14 @@ export default function Assets() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchBalance();
     // Cập nhật mỗi 5 giây
     const interval = setInterval(fetchBalance, 5000);
     return () => clearInterval(interval);
-  }, [token]);
+  }, [token, fetchBalance]);
 
   if (loading) {
     return (

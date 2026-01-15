@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 
 interface Trade {
@@ -16,7 +16,7 @@ export default function TradeHistory() {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchTrades = async () => {
+  const fetchTrades = useCallback(async () => {
     if (!token) return;
     try {
       const res = await fetch("http://localhost:8080/api/v1/trades", {
@@ -31,14 +31,14 @@ export default function TradeHistory() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchTrades();
     // Refresh mỗi 5s để thấy lệnh vừa khớp
     const interval = setInterval(fetchTrades, 5000);
     return () => clearInterval(interval);
-  }, [token]);
+  }, [token, fetchTrades]);
 
   if (loading) {
     return (
