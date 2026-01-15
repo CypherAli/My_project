@@ -9,41 +9,35 @@ interface OrderBookData {
   asks: [string, string][]; // [Price, Amount]
 }
 
+// Mock data for initial state
+const mockData: OrderBookData = {
+  symbol: "BTC/USDT",
+  asks: [
+    ["49250.00", "0.5234"],
+    ["49245.00", "1.2345"],
+    ["49240.00", "0.8921"],
+    ["49235.00", "2.1234"],
+    ["49230.00", "0.6543"],
+    ["49225.00", "1.4567"],
+    ["49220.00", "0.9876"],
+    ["49215.00", "1.7654"],
+  ],
+  bids: [
+    ["49200.00", "1.2345"],
+    ["49195.00", "0.8765"],
+    ["49190.00", "2.3456"],
+    ["49185.00", "0.5432"],
+    ["49180.00", "1.6789"],
+    ["49175.00", "0.9876"],
+    ["49170.00", "1.3456"],
+    ["49165.00", "0.7654"],
+  ],
+};
+
 export default function OrderBook() {
-  const [data, setData] = useState<OrderBookData | null>(null);
-  const [connected, setConnected] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState<OrderBookData | null>(mockData);
 
   useEffect(() => {
-    // MOCK DATA for testing - Remove when WebSocket works
-    const mockData: OrderBookData = {
-      symbol: "BTC/USDT",
-      asks: [
-        ["49250.00", "0.5234"],
-        ["49245.00", "1.2345"],
-        ["49240.00", "0.8921"],
-        ["49235.00", "2.1234"],
-        ["49230.00", "0.6543"],
-        ["49225.00", "1.4567"],
-        ["49220.00", "0.9876"],
-        ["49215.00", "1.7654"],
-      ],
-      bids: [
-        ["49200.00", "1.2345"],
-        ["49195.00", "0.8765"],
-        ["49190.00", "2.3456"],
-        ["49185.00", "0.5432"],
-        ["49180.00", "1.6789"],
-        ["49175.00", "0.9876"],
-        ["49170.00", "1.3456"],
-        ["49165.00", "0.7654"],
-      ],
-    };
-    
-    // Set mock data immediately
-    setData(mockData);
-    setConnected(true);
-    
     // Try to connect to WebSocket in background
     // Throttle để tránh update quá nhanh (gây nhấp nháy)
     let lastUpdate = 0;
@@ -53,15 +47,13 @@ export default function OrderBook() {
     let ws: WebSocket;
     try {
       ws = new WebSocket("ws://localhost:8080/ws");
-    } catch (err) {
+    } catch {
       console.log("WebSocket not available, using mock data");
       return;
     }
 
     ws.onopen = () => {
       console.log("✅ Connected to WebSocket - Real data");
-      setConnected(true);
-      setError(null);
     };
 
     ws.onmessage = (event) => {
@@ -77,12 +69,12 @@ export default function OrderBook() {
         const finalData = typeof parsedData === 'string' ? JSON.parse(parsedData) : parsedData;
 
         setData(finalData);
-      } catch (err) {
-        console.error("❌ Parse Error:", err);
+      } catch (error) {
+        console.error("❌ Parse Error:", error);
       }
     };
 
-    ws.onerror = (err) => {
+    ws.onerror = () => {
       console.log("WebSocket error, keeping mock data");
       // Don't set error - just keep using mock data
     };
