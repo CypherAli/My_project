@@ -60,14 +60,14 @@ export default function OrderForm() {
     e.preventDefault();
     
     if (!token) {
-      alert("⚠️ Please login first!");
+      alert("Please login first!");
       window.location.href = "/login";
       return;
     }
     
     // Validate Trigger Price cho Stop-Limit
     if (orderType === "StopLimit" && (!triggerPrice || parseFloat(triggerPrice) <= 0)) {
-      alert("⚠️ Please enter a valid Trigger Price!");
+      alert("Please enter a valid Trigger Price!");
       return;
     }
     
@@ -91,16 +91,16 @@ export default function OrderForm() {
       });
       
       if (res.ok) {
-        alert("✅ Order Placed Successfully!");
+        alert("Order Placed Successfully!");
         setAmount("");
         setPrice("");
       } else {
         const err = await res.json();
-        alert("❌ Error: " + err.error);
+        alert("Error: " + err.error);
       }
     } catch (error) {
       console.error(error);
-      alert("❌ Failed to place order. Check console for details.");
+      alert("Failed to place order. Check console for details.");
     } finally {
       setLoading(false);
     }
@@ -132,14 +132,14 @@ export default function OrderForm() {
             onClick={() => setOrderType("Limit")}
             className={`transition-colors ${orderType === "Limit" ? "text-yellow-500" : "hover:text-gray-300"}`}
           >
-            📊 Limit
+            Limit
           </button>
           <button 
             type="button"
             onClick={() => setOrderType("Market")}
             className={`transition-colors ${orderType === "Market" ? "text-yellow-500" : "hover:text-gray-300"}`}
           >
-            ⚡ Market
+            Market
           </button>
           <button 
             type="button"
@@ -154,7 +154,7 @@ export default function OrderForm() {
         {orderType === "StopLimit" && (
           <div>
             <label className="text-xs text-gray-500 mb-1 block">
-              🎯 Trigger Price (USDT)
+              Trigger Price (USDT)
             </label>
             <div className="flex bg-gray-900 border border-yellow-700/50 rounded overflow-hidden">
               <input 
@@ -169,7 +169,7 @@ export default function OrderForm() {
               <span className="p-2 text-gray-500 text-sm flex items-center">USDT</span>
             </div>
             <p className="text-[10px] text-yellow-500 mt-1">
-              💡 {side === "Bid" 
+              {side === "Bid" 
                 ? "Buy order activates when market price reaches or exceeds this level" 
                 : "Sell order activates when market price reaches or falls below this level (Stop-Loss)"}
             </p>
@@ -203,7 +203,7 @@ export default function OrderForm() {
             <span className="p-2 text-gray-500 text-sm flex items-center">USDT</span>
           </div>
           {orderType === "Market" && (
-            <p className="text-xs text-yellow-500 mt-1">💡 Will execute at best available price</p>
+            <p className="text-xs text-yellow-500 mt-1">Will execute at best available price</p>
           )}
           {orderType === "StopLimit" && (
             <p className="text-[10px] text-gray-500 mt-1">
@@ -260,7 +260,7 @@ export default function OrderForm() {
 
       {mounted && !token && (
         <div className="mt-4 p-3 bg-yellow-900/20 border border-yellow-700/30 rounded text-xs text-yellow-500">
-          <strong>⚠️ Not logged in:</strong> Please <a href="/login" className="underline font-bold">login</a> to place orders
+          <strong>Not logged in:</strong> Please <a href="/login" className="underline font-bold">login</a> to place orders
         </div>
       )}
     </div>

@@ -53,7 +53,7 @@ export default function OrderBook() {
     }
 
     ws.onopen = () => {
-      console.log("✅ Connected to WebSocket - Real data");
+      console.log("Connected to WebSocket - Real data");
     };
 
     ws.onmessage = (event) => {
@@ -70,7 +70,7 @@ export default function OrderBook() {
 
         setData(finalData);
       } catch (error) {
-        console.error("❌ Parse Error:", error);
+        console.error("Parse Error:", error);
       }
     };
 
