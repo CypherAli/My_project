@@ -21,7 +21,7 @@ export default function TradingPage() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Tab Navigation */}
-        <div className="flex items-center border-b border-tv-gray-150 bg-tv-white px-4">
+        <div className="flex items-center border-b border-tv-gray-150 bg-tv-white px-6 py-3">
           <button
             onClick={() => setActiveTab('chart')}
             className={`tab-button ${activeTab === 'chart' ? 'active' : ''}`}

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
+import LanguageSelector from "@/components/LanguageSelector";
 
 export default function Home() {
   const { token, logout } = useAuth();
@@ -22,11 +23,11 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-[#0a0e27] text-gray-100 relative overflow-hidden">
+    <main className="min-h-screen bg-black text-gray-100 relative overflow-hidden">
       {/* Animated Background with Gradient Waves */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Base gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0a0e27] via-[#1a1b3d] to-[#0a0e27]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black" />
         
         {/* Animated gradient orbs */}
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-blue-500/20 via-purple-500/10 to-transparent rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
@@ -40,8 +41,9 @@ export default function Home() {
           <div className="absolute top-3/4 left-0 right-0 h-px bg-gradient-to-r from-transparent via-pink-400/30 to-transparent" />
         </div>
       </div>
+
       {/* Header */}
-      <header className="relative z-10 h-16 border-b border-white/5 flex items-center px-8 bg-[#0a0e27]/80 backdrop-blur-xl">
+      <header className="relative z-10 h-16 border-b border-white/5 flex items-center px-8 bg-black/80 backdrop-blur-xl">
         {/* Logo */}
         <Link href="/" className="font-bold text-xl text-white tracking-tight mr-8 flex items-center gap-2 hover:opacity-80 transition">
           <div className="flex items-center gap-2">
@@ -86,12 +88,7 @@ export default function Home() {
         {/* Right Side Actions */}
         <div className="flex items-center gap-4 ml-auto">
           {/* Language Selector */}
-          <button className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition px-3 py-2 rounded-lg hover:bg-white/5">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span className="font-semibold">EN</span>
-          </button>
+          <LanguageSelector />
 
           {/* User/Auth Section - Suppress Hydration */}
           <div suppressHydrationWarning>
@@ -125,13 +122,24 @@ export default function Home() {
 
       {/* Hero Section */}
       <div className="relative z-10 container mx-auto px-8 pt-32 pb-24">
-        <div className="max-w-6xl mx-auto">
+        {/* Hero Background Image */}
+        <div className="absolute inset-0 z-0 opacity-30">
+          <img
+            src="https://images.unsplash.com/photo-1639322537228-f710d846310a?w=1920&q=80"
+            alt="Trading Background"
+            className="w-full h-full object-cover"
+            style={{ filter: 'brightness(0.7) contrast(1.2)' }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+        </div>
+        
+        <div className="max-w-6xl mx-auto relative z-10">
           {/* Main Headline - TradingView Style */}
           <div className="text-center mb-12">
-            <h1 className="text-7xl md:text-8xl font-bold mb-8 leading-tight">
+            <h1 className="text-7xl md:text-8xl font-bold mb-8 leading-tight tracking-tight">
               <span className="text-white">Look first</span>
-              <span className="text-white/40"> / </span>
-              <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 text-transparent bg-clip-text">
+              <span className="text-gray-600"> / </span>
+              <span className="bg-gradient-to-r from-yellow-400 via-orange-400 to-orange-500 text-transparent bg-clip-text animate-gradient">
                 Then leap.
               </span>
             </h1>
@@ -141,14 +149,20 @@ export default function Home() {
           </div>
 
           {/* CTA Button */}
-          <div className="flex justify-center mb-20">
-            <Link
-              href={token ? "/dom" : "/login"}
-              className="group relative px-12 py-5 bg-white text-[#0a0e27] text-lg font-semibold rounded-full transition-all hover:scale-105 hover:shadow-2xl hover:shadow-white/20"
-            >
-              <span className="relative z-10">Get started for free</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 opacity-0 group-hover:opacity-20 rounded-full transition-opacity" />
-            </Link>
+          <div className="flex justify-center mb-20" suppressHydrationWarning>
+            {!isClient ? (
+              <div className="px-12 py-5 bg-white text-black text-lg font-semibold rounded-full">
+                Get started for free
+              </div>
+            ) : (
+              <Link
+                href={token ? "/dom" : "/login"}
+                className="group relative px-12 py-5 bg-white text-black text-lg font-semibold rounded-full transition-all hover:scale-105 hover:shadow-2xl hover:shadow-white/20"
+              >
+                <span className="relative z-10">Get started for free</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-400 opacity-0 group-hover:opacity-20 rounded-full transition-opacity" />
+              </Link>
+            )}
           </div>
 
           {/* Subtext */}
@@ -161,7 +175,6 @@ export default function Home() {
           {/* Features - Minimal Design */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             <div className="group p-8 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] hover:border-white/10 transition-all">
-              <div className="text-4xl mb-6">⚡</div>
               <h3 className="text-xl font-bold text-white mb-3">Lightning Fast</h3>
               <p className="text-gray-400 leading-relaxed">
                 Rust-powered matching engine processes thousands of orders per second with microsecond latency.
@@ -169,7 +182,6 @@ export default function Home() {
             </div>
 
             <div className="group p-8 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] hover:border-white/10 transition-all">
-              <div className="text-4xl mb-6">📊</div>
               <h3 className="text-xl font-bold text-white mb-3">Real-Time Data</h3>
               <p className="text-gray-400 leading-relaxed">
                 WebSocket streaming delivers live orderbook updates and trade executions instantly.
@@ -177,7 +189,6 @@ export default function Home() {
             </div>
 
             <div className="group p-8 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] hover:border-white/10 transition-all">
-              <div className="text-4xl mb-6">🔒</div>
               <h3 className="text-xl font-bold text-white mb-3">Bank-Grade Security</h3>
               <p className="text-gray-400 leading-relaxed">
                 Enterprise security with JWT authentication and ACID-compliant transactional system.
@@ -228,12 +239,12 @@ export default function Home() {
       <div className="relative z-10 border-t border-white/5 py-20">
         <div className="container mx-auto px-8">
           <div className="max-w-5xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6" suppressHydrationWarning>
               <Link
                 href="/dom"
-                className="group p-10 rounded-2xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/20 hover:border-blue-500/40 transition-all"
+                className="group p-10 rounded-2xl bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-orange-500/20 hover:border-orange-500/40 transition-all"
               >
-                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-blue-400 transition">
+                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-orange-400 transition">
                   Start Trading →
                 </h3>
                 <p className="text-gray-400">
@@ -241,17 +252,24 @@ export default function Home() {
                 </p>
               </Link>
 
-              <Link
-                href={token ? "#" : "/login"}
-                className="group p-10 rounded-2xl bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 hover:border-purple-500/40 transition-all"
-              >
-                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-purple-400 transition">
-                  {token ? "View Dashboard" : "Create Account"} →
-                </h3>
-                <p className="text-gray-400">
-                  {token ? "Monitor your positions and trading history." : "Sign up in seconds. No credit card required."}
-                </p>
-              </Link>
+              {!isClient ? (
+                <div className="p-10 rounded-2xl bg-gradient-to-br from-orange-500/10 to-yellow-500/10 border border-yellow-500/20">
+                  <h3 className="text-2xl font-bold text-white mb-3">View Dashboard →</h3>
+                  <p className="text-gray-400">Monitor your positions and trading history.</p>
+                </div>
+              ) : (
+                <Link
+                  href={token ? "#" : "/login"}
+                  className="group p-10 rounded-2xl bg-gradient-to-br from-orange-500/10 to-yellow-500/10 border border-yellow-500/20 hover:border-yellow-500/40 transition-all"
+                >
+                  <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-yellow-400 transition">
+                    {token ? "View Dashboard" : "Create Account"} →
+                  </h3>
+                  <p className="text-gray-400">
+                    {token ? "Monitor your positions and trading history." : "Sign up in seconds. No credit card required."}
+                  </p>
+                </Link>
+              )}
             </div>
           </div>
         </div>

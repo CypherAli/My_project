@@ -4,6 +4,16 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
 import LanguageSelector from "@/components/LanguageSelector";
+import MarketSummary from "@/components/MarketSummary";
+import USStocks from "@/components/USStocks";
+import CommunityIdeas from "@/components/CommunityIdeas";
+import IndicatorsStrategies from "@/components/IndicatorsStrategies";
+import TopStories from "@/components/TopStories";
+import CryptoSection from "@/components/CryptoSection";
+import ForexHeatmap from "@/components/ForexHeatmap";
+import FuturesCommodities from "@/components/FuturesCommodities";
+import CalendarSection from "@/components/CalendarSection";
+import BrokerSection from "@/components/BrokerSection";
 
 export default function Home() {
   const { token, logout } = useAuth();
@@ -41,7 +51,6 @@ export default function Home() {
           <div className="absolute top-3/4 left-0 right-0 h-px bg-gradient-to-r from-transparent via-pink-400/30 to-transparent" />
         </div>
       </div>
-
       {/* Header */}
       <header className="relative z-10 h-16 border-b border-white/5 flex items-center px-8 bg-black/80 backdrop-blur-xl">
         {/* Logo */}
@@ -122,7 +131,18 @@ export default function Home() {
 
       {/* Hero Section */}
       <div className="relative z-10 container mx-auto px-8 pt-32 pb-24">
-        <div className="max-w-6xl mx-auto">
+        {/* Hero Background Image */}
+        <div className="absolute inset-0 z-0 opacity-30">
+          <img
+            src="https://images.unsplash.com/photo-1639322537228-f710d846310a?w=1920&q=80"
+            alt="Trading Background"
+            className="w-full h-full object-cover"
+            style={{ filter: 'brightness(0.7) contrast(1.2)' }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+        </div>
+        
+        <div className="max-w-6xl mx-auto relative z-10">
           {/* Main Headline - TradingView Style */}
           <div className="text-center mb-12">
             <h1 className="text-7xl md:text-8xl font-bold mb-8 leading-tight tracking-tight">
@@ -140,16 +160,20 @@ export default function Home() {
           {/* CTA Button */}
           <div className="flex justify-center mb-20" suppressHydrationWarning>
             {!isClient ? (
-              <div className="px-12 py-5 bg-white text-black text-lg font-semibold rounded-full">
+              <div className="px-14 py-6 bg-white text-black text-lg font-bold rounded-full">
                 Get started for free
               </div>
             ) : (
               <Link
                 href={token ? "/dom" : "/login"}
-                className="group relative px-12 py-5 bg-white text-black text-lg font-semibold rounded-full transition-all hover:scale-105 hover:shadow-2xl hover:shadow-white/20"
+                className="group relative px-14 py-6 bg-white hover:bg-gray-50 text-black text-lg font-bold rounded-full transition-all duration-300 hover:scale-105 shadow-2xl hover:shadow-white/30"
               >
-                <span className="relative z-10">Get started for free</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-400 opacity-0 group-hover:opacity-20 rounded-full transition-opacity" />
+                <span className="flex items-center gap-3">
+                  Get started for free
+                  <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </span>
               </Link>
             )}
           </div>
@@ -160,9 +184,79 @@ export default function Home() {
               $0 forever, no credit card needed
             </p>
           </div>
+        </div>
+      </div>
 
-          {/* Features - Minimal Design */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+      {/* Where the world does markets - Video Section */}
+      <div className="relative z-10 py-32 border-t border-white/5">
+        <div className="container mx-auto px-8">
+          <div className="max-w-6xl mx-auto">
+            {/* Section Header */}
+            <div className="text-center mb-16">
+              <h2 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+                Where the world does markets
+              </h2>
+              <p className="text-xl text-gray-400 font-light max-w-3xl mx-auto">
+                Join 100 million traders and investors taking the future into their own hands.
+              </p>
+            </div>
+
+            {/* Trading Chart Mockup with Glow Effect */}
+            <div className="relative group">
+              {/* Glow Background */}
+              <div className="absolute -inset-4 bg-gradient-to-r from-blue-500/30 via-cyan-500/30 to-blue-500/30 rounded-3xl blur-2xl opacity-75 group-hover:opacity-100 transition-opacity duration-700" />
+              
+              {/* Chart Container - Reduced size */}
+              <div className="relative rounded-2xl overflow-hidden border-2 border-blue-400/50 bg-black/40 backdrop-blur-sm shadow-2xl max-w-4xl mx-auto">
+                {/* Chart Video/GIF */}
+                <div className="relative aspect-video bg-gradient-to-br from-gray-900 via-black to-gray-900">
+                  {/* Trading Chart - High quality stock market image with subtle animation */}
+                  <div className="relative w-full h-full overflow-hidden">
+                    <img
+                      src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1920&q=80"
+                      alt="Trading Chart"
+                      className="w-full h-full object-cover"
+                    />
+                    
+                    {/* Animated scanning line effect */}
+                    <div className="absolute inset-0 opacity-20">
+                      <div className="absolute w-full h-0.5 bg-gradient-to-r from-transparent via-blue-400 to-transparent animate-scan" />
+                    </div>
+                    
+                    {/* Pulsing data points */}
+                    <div className="absolute top-1/4 left-1/4 w-3 h-3 bg-green-400 rounded-full animate-ping" />
+                    <div className="absolute top-1/3 right-1/3 w-3 h-3 bg-red-400 rounded-full animate-ping" style={{ animationDelay: '0.5s' }} />
+                    <div className="absolute bottom-1/3 left-1/2 w-3 h-3 bg-blue-400 rounded-full animate-ping" style={{ animationDelay: '1s' }} />
+                  </div>
+                  
+                  {/* Subtle overlay gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
+                </div>
+              </div>
+
+              {/* Explore Button - Moved below chart */}
+              <div className="flex justify-center mt-12">
+                <Link
+                  href="/dom"
+                  className="group/btn px-10 py-4 bg-white hover:bg-gray-50 text-black rounded-full font-semibold text-lg transition-all duration-300 hover:scale-105 shadow-2xl flex items-center gap-3"
+                >
+                  Explore features
+                  <svg className="w-5 h-5 transform group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Features Section */}
+      <div className="relative z-10 py-20 border-t border-white/5">
+        <div className="container mx-auto px-8">
+          <div className="max-w-6xl mx-auto">
+            {/* Features - Minimal Design */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             <div className="group p-8 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] hover:border-white/10 transition-all">
               <h3 className="text-xl font-bold text-white mb-3">Lightning Fast</h3>
               <p className="text-gray-400 leading-relaxed">
@@ -186,6 +280,7 @@ export default function Home() {
           </div>
         </div>
       </div>
+    </div>
 
       {/* Tech Stack Section */}
       <div className="relative z-10 border-t border-white/5 py-16">
@@ -223,6 +318,36 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Market Summary Section */}
+      <MarketSummary />
+
+      {/* US Stocks Section */}
+      <USStocks />
+
+      {/* Community Ideas Section */}
+      <CommunityIdeas />
+
+      {/* Indicators and Strategies Section */}
+      <IndicatorsStrategies />
+
+      {/* Top Stories Section */}
+      <TopStories />
+
+      {/* Crypto Section */}
+      <CryptoSection />
+
+      {/* Forex Heatmap Section */}
+      <ForexHeatmap />
+
+      {/* Futures & Commodities Section */}
+      <FuturesCommodities />
+
+      {/* Calendar Section */}
+      <CalendarSection />
+
+      {/* Broker Section */}
+      <BrokerSection />
 
       {/* Quick Access Section */}
       <div className="relative z-10 border-t border-white/5 py-20">
